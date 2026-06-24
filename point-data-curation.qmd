@@ -1,0 +1,11 @@
+# Point data curation
+
+## Introduction to point data sources
+
+## Data curation methods
+
+## Point data validation
+
+## Gap filling
+
+Blah blah blah

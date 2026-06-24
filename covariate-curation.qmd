@@ -1,0 +1,7 @@
+# Covariate curation
+
+## Covariate selection and curation
+
+## Pre-processing
+
+## Processing and derivatives

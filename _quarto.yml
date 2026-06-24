@@ -4,9 +4,9 @@ project:
   output-dir: docs
 
 book:
-  title: "Alaska Soil Data Bank Project Metadata"
-  author: "N.A. Jelinski, I.H. Ainuddin and the AKSDB Team"
-  date: "13-November-2023"
+  title: "MN Peatland Carbon Modeling"
+  author: "K. O'Connor, N. Jelinski and the Lowland Conifer Team"
+  date: "June 24, 2026"
   cover-image: "aksdb-badge-02.png"
   
   chapters:
