@@ -17,6 +17,7 @@ book:
     - x03-model-implementation.qmd
     - x04-results.qmd
     - x05-discussion.qmd
+    - new-thing.qmd
   appendices:
     - references.qmd
 
