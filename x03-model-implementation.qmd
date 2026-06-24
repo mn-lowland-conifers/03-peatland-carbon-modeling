@@ -1,0 +1,11 @@
+# Model Implementation
+
+## Model selection
+
+### Random forest
+
+### Gradient boosting
+
+This model was implemented using script [XXXX-script](https://github.com/mn-lowland-conifers/03-peatland-carbon-modeling/blob/eaf38fb5b13be796996b60b77ef77608b88c3bfe/index.qmd)
+
+blah blah

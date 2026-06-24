@@ -11,16 +11,14 @@ book:
   
   chapters:
     - index.qmd
-    - datamanagementplan.qmd
-    - deliverable1.qmd
-    - deliverable2.qmd
-    - deliverable3.qmd
-    - authorship-guidelines.qmd
-    - summary.qmd
-    - references.qmd
+    - x01-point-data-curation.qmd
+    - x02-covariate-curation.qmd
+	# add a chapter on X
+    - x03-model-implementation.qmd
+    - x04-results.qmd
+    - x05-discussion.qmd
   appendices:
-    - co-authorship-template.qmd
-    - data-use-and-sharing.qmd
+    - references.qmd
 
 bibliography: references.bib
 
