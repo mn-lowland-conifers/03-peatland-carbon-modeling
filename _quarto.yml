@@ -1,0 +1,35 @@
+project:
+  type: book
+  # change output-dir to "docs" to publish to gh pages
+  output-dir: docs
+
+book:
+  title: "Alaska Soil Data Bank Project Metadata"
+  author: "N.A. Jelinski, I.H. Ainuddin and the AKSDB Team"
+  date: "13-November-2023"
+  cover-image: "aksdb-badge-02.png"
+  
+  chapters:
+    - index.qmd
+    - datamanagementplan.qmd
+    - deliverable1.qmd
+    - deliverable2.qmd
+    - deliverable3.qmd
+    - authorship-guidelines.qmd
+    - summary.qmd
+    - references.qmd
+  appendices:
+    - co-authorship-template.qmd
+    - data-use-and-sharing.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
+
