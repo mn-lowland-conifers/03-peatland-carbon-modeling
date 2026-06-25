@@ -2,12 +2,39 @@
 
 ## Introduction to point data sources
 
-## Data curation methods
+Peat presence, depth, and decomposition models were trained using soil observation data from three main
+sources: the Minnesota Peat Inventory, the National Soil Information System (NAISIS), and the Minnesota 
+Biological Survey (MBS).
+
+The Minnesota Peat Inventory is a dataset collected by the Minnesota DNR during the 1970's and 80's. It
+contains probe measurement peat depths across peatlands in Minnesota as well as laboratory analyzed
+data including von post decomposition class, bulk density, carbon content, ash content, among other metrics
+at a horizon level. 
+
+NASIS is the USDA's Natural Resource Conservation Services data set that populates soil survey. The dataset
+contains soil profile descriptions of both mineral and organic soils across the country. 
+
+The Minnesota Biological Survey contribues presence and absence observations derived from native plant
+community classifications where peat associated community types were coded as peat present and upland or
+non peat communities were coded as peat absent. 
+
+Together these sources provide a spatially distributed dataset that spans the state of Minnesota.
+
+
+# Data curation methods
+
+
+
 
 ## Point data validation
 
+
+
 ## Gap filling
 
-Blah blah blah
+
+
+
+\
 
 Adding abunch of new stuff blah blah
