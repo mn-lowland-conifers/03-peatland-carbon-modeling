@@ -1,6 +1,14 @@
 # Covariate curation
 
 ## Covariate selection and curation
+Covariates are the data used my machine learning models to make predictions. 
+
+
+To run random forest models, each point that is fed into the model must have and associated value
+for every covariate in the raster stack. All rasters are registered to the same 10 meter grid in
+EPSG:5070 before extraction
+
+
 
 ## Pre-processing
 
