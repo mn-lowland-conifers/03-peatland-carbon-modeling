@@ -101,12 +101,12 @@ Exp410 was chosen as the final random forest production model. It used 41 featur
 | F1 (threshold = 0.327) | 0.8445 | 0.8061 |
 | n | 57,134 | 57,134 |
 
-The drop from random cv AUC (0.972) to spatial cv AUC (0.957) reflects spatial autocorrelation in the training data where nearby peat and non-peat observations are more similar and random folds
+The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where nearby observations are more similar and random folds
 overestimate performance. 
 
-# Gradient Boosting - XGBoost and LightGBM
+# Gradient Boosting (XGBoost and LightGBM)
 
-XGBoost and LightGBM were trained on the 77 feature set using spatial block cv. Class imbalance was addressed with 'scale_pos_weight' set on the ratio of negative to positive training examples.
+XGBoost and LightGBM were trained using spatial block cv. Class imbalance was addressed with 'scale_pos_weight' set on the ratio of negative to positive training examples.
 
 ## Point_ID Correction
 The first runs of the gradient boosting models (PROB_XGB_001, PROB_LGBM_001) included 'point_id' in the feature set. During spatial inference the point_id feature was assigned a constant fill
@@ -120,10 +120,10 @@ Corrected models (PROB_XGB_002, PROB_LGBM_002) were retrained using 76 features 
 | XGBoost (PROB_XGB_002) | 0.9615 | 0.8892 | 0.8105 | 57,134 |
 | LightGBM (PROB_LGBM_002) | 0.9624 | 0.8917 | 0.8152 | 57,134 |
 
-Random cv AUC for LightGBM (PROB_LGBM_001, before correction) was 0.9965 which was an overestimate caused by spatial autocorrelation and point_id leakage. 
+Random cv AUC for LightGBM (PROB_LGBM_001) was 0.9965 which was an overestimate caused by spatial autocorrelation and point_id leakage. 
 
 # Generalized Additive Model (GAM)
-A Logistic GAM was fit using the pygam library with thin-plate spline terms for each of the 76 features. Due to the O(n²) memory complexity of kernel smoothing, every
+A Logistic GAM was fit using the pygam library with thin-plate spline terms for each of the 76 features. Due to the high memory complexity needed  every
 cross-validation fold was trained on a balanced subsample of 30,000 observations (15,000 peat, 15,000 non-peat).
 
 | Metric | Spatial CV |
@@ -132,7 +132,7 @@ cross-validation fold was trained on a balanced subsample of 30,000 observations
 | Average Precision | 0.8567 |
 | F1 (threshold = 0.754) | 0.7957 |
 
-# Support Vector Machine (PROB_SVM_001)
+# Support Vector Machine
 
 A Support Vector Classifier with RBF kernel standardized with StandardScaler was also run. Because of memory complexity of kernel SVM, each fold used a subsample of the training points 
 that included 15,000 training observations (7,500 peat, 7,500 non-peat) with predictions generated on the full held-out fold.
@@ -155,7 +155,7 @@ Solver: lbfgs, C = 1.0, class_weight = 'balanced'.
 | Average Precision | 0.8139 |
 | F1 (threshold = 0.754) | 0.7756 |
 
-# Convolutional Neural Network (PROB_CNN_001 through PROB_CNN_004)
+# Convolutional Neural Network (CNN))
 
 
 
@@ -174,11 +174,10 @@ Three threshold metrics were evaluated by sweeping 200 equally-spaced values fro
 - G-mean: geometric mean of sensitivity and specificity (resulted in identical results to Youden's J)
 
 The first threshold used after initial inferences were made was 0.50 and did a poor job visually by underpredicting peat. Areas identifiable from aerial imagery were excluded at this threshold.
-The F1-optimal threshold of **0.327** was selected as the operational classification threshold. At this threshold, the RF model correctly identifies 85% of true peat observations
-(sensitivity = 0.85) with a precision of 0.84, expanding the predicted peat area from 15.5% to 18.4% of training points compared to the 0.50 threshold. The Youden's J threshold (0.186) was
-tested but not used as it predicted peat too often resulting in a false positive rate of ~25%.
+The F1-optimal threshold of 0.327 was the final selection. At this threshold the RF model correctly identifies 85% of true peat observations
+(sensitivity = 0.85) with a precision of 0.84. The Youden's J threshold (0.186) was tested but not used as it predicted peat too often and had a false positive rate of ~25%.
 
-The F1-optimal threshold of 0.327 was also used as the peat probability mask for the various peat property models that were only run on areas were peat is likely to exist
+The F1-optimal threshold of 0.327 was also used as the peat probability mask for the various peat property models that were run exclusively on areas were peat is likely to exist
 (depth, organic decomposition)
 
 
