@@ -18,12 +18,30 @@ The Minnesota Biological Survey contribues presence and absence observations der
 community classifications where peat associated community types were coded as peat present and upland or
 non peat communities were coded as peat absent. 
 
-Together these sources provide a spatially distributed dataset that spans the state of Minnesota.
+Together these sources provide a spatially distributed dataset across Minnesota.
 
 
 # Data curation methods
 
+The final point datasets used to train each model were created by combining the data sources any applying 
+filters specific to each variable. 
 
+## Binary Presence/Absence Dataset
+FINAL_binary_mn.csv (~60,000 points)
+This point dataset is used for binary classification models. It combines ALL points from the Minnesota peat 
+inventory, NASIS and the MBS. A new field was created in this set called peat_binary. Points that have a 
+depth that is greater than 0cm get a value of 1, and points that contain a depth value of 0cm are assigned 
+a 0. peat_binary 1 (peat present) or 0 (peat absent). 
+
+A secondary version (FINAL_binary_mn_0_20_dropped.csv) excludes points where peat depth was measured
+between 1–20 cm. There are soils described in MN that have “duff” layers that can be classified as an
+O horizon but do not necessarily indicate a presence of true peat. (57,000)
+
+## Peat depth dataset
+depb_points_mn.csv (45,878 points)
+A dataset of locations with confirmed peat depth measurements (depb in cm). Unlike the binary dataset,
+every point here has a measured depth value. This dataset is used for depth prediction models. Only non
+peat values with a MEASURED value of 0cm were added to this set (NASIS mineral points, mn peat inventory) 
 
 
 ## Point data validation
