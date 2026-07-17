@@ -1,11 +1,52 @@
 # Model Implementation
 
-## Model selection
+This section goes over the development and evaluation of models created to predict peat presence and related peat properties. The modeling workflow had four steps: (1) training data curation for each property being modeled.
+(2) feature selection using recursive feature elimination. (3) model training and hyperparameter tuning across six different machine learning models. (4) model evaluation using both random and spatial cross validation.
+All modeling was done using Python 3.8 using scikit learn. 
 
-### Random forest
+# Overview
 
-### Gradient boosting
+## Cross-Validation
 
-This model was implemented using script [XXXX-script](https://github.com/mn-lowland-conifers/03-peatland-carbon-modeling/blob/eaf38fb5b13be796996b60b77ef77608b88c3bfe/index.qmd)
+Two cross-validation strategies were used in model development and are reported alongside each models results
 
-blah blah
+### Random cross-validation
+Random cross-validation used stratified k-fold splitting (k=5) and randomly assigned observations to folds. This approach is standard in machine learning but it can create bias when training 
+points that are spatially clustered. Because nearby points tend to have similar covariate values, a randomly held out point may be geographically adjacent to a training point which allows the model to interpolate instead
+of generalize. This can inflate the metrics used to evaluate the effectiveness of models. 
+
+### Spatial block cross-validation
+Spatial block cross-validation was used to replicate ture independant validation. The boundary of the spatial model (state of Minnesota) was split into a 50 xm x 50 km grid. All training points that shared a block were 
+assigned to the same fold, with blocks allocated to folds in a round robin. When a block is held out for validation the model has never seen any training point with that geographic region forcing the model to generalize 
+across the space instead of making an interpretation using local data. This method produces a lower but more reliable performance estimate and is the primary reported metric for models. The performance drop between the 
+random and spatial cross-validation observed across the models reflects spatial autocorrelation in the training data. 
+
+## Shared Modeling Decisions
+
+Several decision were consistant across all target properties and model types.
+
+### Coordinate reference system
+All training points and covariates were projected to EPSG:5070 (Albers Equal Area Conic, NAD83) before modeling. Spatial block fold assignment used projected coordinates.
+
+### Missing Data 
+Features with missing values at training point locations were imputed with the column median computed from training data only. This primarily impacted distance based features at edge locations and Sentinel-1 backscatter
+features where coverage was incomplete (~45% of training points). 
+
+### Negative prediction clipping
+Depth regression models (XGBoost, LightGBM, GAM, SVM) can produce negative predictions. This mainly impacted the peat depth model. All negative depth predictions were clipped to zero at inference time. 
+
+***NOTE have not ran other approaches to get non-negative outputs. (ie Tweedie or Gamma loss function)
+
+### Model Catalog
+All trained models, their feature sets, parameters, cross-validation metrics, and output file paths are documented in a model catalog (MODEL_CATALOG.csv). Model codes follow the convention
+{TARGET}_{ALGORITHM}_{VERSION} (e.g., PROB_RF_001, DEPTH_CNN_002).
+
+# Peat Probability
+
+# Peat Depth
+
+# Organic decomposition
+
+# Below ground Carbon
+
+# Above ground Carbon
