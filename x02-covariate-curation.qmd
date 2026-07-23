@@ -1,15 +1,85 @@
-# Covariate curation
+# Covariate Curation
 
-## Covariate selection and curation
-Covariates are the data used my machine learning models to make predictions. 
+## Computing Environment
+Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL (ABI mismatches, missing libpoppler, libtiff version conflicts). 
+## Reference Grid
+All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data.
+Reference raster: gNATSGO 10m MUKEY raster
+Dimensions: 66,474 × 75,185 pixels
+CRS: EPSG:5070 (NAD83 / Conus Albers Equal Area)
+Origin: −99,098, 3,021,389
+Resolution: 10m
+### Digital Elevation Model
+Source: USGS 3D Elevation Program (3DEP), 10m resolution
+Download: National Map Downloader, https://apps.nationalmap.gov/downloader/
+Tiles mosaicked into a single statewide raster and clipped to the Minnesota state boundary using GDAL warp with output CRS forced to EPSG:5070
+minnesota_dem_10m.tif
 
+### Terrain Derivatives (WhiteboxTools)
+WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. 
+Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process.
+### Processing Strategy
+Two approaches were used depending if the derivative is affected by watershed context:
+Statewide: Computed directly on the statewide mosaicked DEM. These derivatives only require local information and do not depend on upstream drainage areas.
+slope, aspect, hillshade
+planCurvature, profileCurvature, meanCurvature, maximalCurvature
+geomorphons, pennockLandformClass
+devfrommeanelev (4m, 8m, 16m), diffFromMeanElev
+relativeTopographicPosition (4m, 8m, 16m)
+By HUC8 watershed: For derivatives that are impacted by flow patterns, a different approach was used. Minnesota was divided into 127 HUC8 watersheds and a 5km buffer was applied around each HUC8. This was done to prevent potential edge effects from occurring. Derivatives were computed on each buffered watershed tile independently with individual SLURM jobs (one per HUC8), then mosaicked back together with the overlapping buffer zones removed.
+breached_dem (hydrologically conditioned DEM)
+d8FlowAccumulation, dInfFlowAccumulation
+wetnessIndex (TWI)
+### Hydrological Modification
+Minnesota peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching approach was used to carve channels through barriers blocking drainage versus raising the surface itself. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values.
+Modification workflow by HUC8 watershed:
+Step
+Tool
+Output
+Purpose
+1
+FillSingleCellPits
+_01_fscp.tif
+Remove single-cell LiDAR artifacts
+2
+FlattenLakes
+_02_flat.tif
+Flatten lake surfaces to minimum elevation
+3
+TopologicalBreachBurn
+_03_tbb.tif
+Burn stream network into DEM
+4
+BreachDepressionsLeastCost
+_04_bdlc.tif
+Breach through road embankments and barriers
+5
+FillSingleCellPits
+_05_fel.tif
+Final cleanup
 
-To run random forest models, each point that is fed into the model must have and associated value
-for every covariate in the raster stack. All rasters are registered to the same 10 meter grid in
-EPSG:5070 before extraction
+Parameters:
+TopologicalBreachBurn snap = 2.0m (2-cell tolerance at 1m resolution for stream/DEM alignment)
+BreachDepressionsLeastCost dist = 100 cells (100m max breach length), max_cost = 1.0m
+Input datasets:
+Lakes: DNR HydroFeatures (polygons)
+Streams: DNR RiversStreams (lines)
+Roads: MnDOT Roadway Routes (lines)
+Final terrain derivatives: slope.tif, aspect.tif, hillshade.tif, planCurvature.tif, profileCurvature.tif, maximalCurvature.tif, breached_dem.tif, d8FlowAccumulation.tif, dInfFlowAccumulation.tif, wetnessIndex.tif, devfrommeanelev_4m.tif, devfrommeanelev_8m.tif, devfrommeanelev_16m.tif, diffFromMeanElev.tif, relativeTopographicPosition_4m.tif, relativeTopographicPosition_8m.tif, relativeTopographicPosition_16m.tif, geomorphons.tif, pennockLandformClass.tif
 
+## Sentinel-2 Imagery
+Source: COPERNICUS/S2_SR_HARMONIZED from Google Earth Engine
+Dates: 2019–2024
+Extent: Minnesota state boundary (TIGER/2018/States)
+Seasonal Compositing
+Three seasonal median composites were generated:
+Spring (April–May): cloud and snow masked
+Summer (June–August): cloud masked 
+Fall (September–October): cloud and snow masked
+Cloud masking used SCL layer excluding: cloud shadows (class 3), medium cloud (class 8), high cloud (class 9), thin cirrus (class 10). Per-image pre-filter excluded scenes >30% cloud cover. Snow/ice (class 11) masked for spring and fall.
 
+In total there were 10 bands per season: B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12 and 2 additional bands were calculated:
+NDVI = (B08 − B04) / (B08 + B04) Normalized Difference Vegetation Index to quantify vegetation health and density
+SWDI = from Green (B03) and Red Edge 1 (B05) Soil Water Deficit Index sensitive to surface moisture
+Bands originally at 20m resolution (B05–B08A, B11, B12) were resampled to 10m during GEE export.
 
-## Pre-processing
-
-## Processing and derivatives
