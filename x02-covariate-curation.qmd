@@ -81,5 +81,75 @@ Cloud masking used SCL layer excluding: cloud shadows (class 3), medium cloud (c
 In total there were 10 bands per season: B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12 and 2 additional bands were calculated:
 NDVI = (B08 − B04) / (B08 + B04) Normalized Difference Vegetation Index to quantify vegetation health and density
 SWDI = from Green (B03) and Red Edge 1 (B05) Soil Water Deficit Index sensitive to surface moisture
-Bands originally at 20m resolution (B05–B08A, B11, B12) were resampled to 10m during GEE export.
+Bands that were originally at a 20m resolution (B05–B08A, B11, B12) were resampled to 10m during the GEE export.
+
+### Sentinel 2 export and mosaicking
+
+GEE automatically tiled the whole state exports. Tiles were downloaded from google drive to local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.
+
+### Tasseled Cap 
+
+Tasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), greenness(TCG), and wetness(TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs. spring/fall)
+
+### Sentinel-1 
+
+**Still in the works***
+Original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, while limited, S1 survived RFE and increased R2 values
+Changes in the export (combining ascending and descending runs, extending date range) will hopefully fill the missing data:
+Three bands per composite: VV (dB), VH (dB), VV/VH ratio.
+Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.
+
+## PRISM Climate data
+Source: PRISM Climate Group, 30-year normals at 800m
+Layers: Annual precipitation, mean July max temp, mean annual temp, mean January min temp
+
+PRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resampled to 10m (bilinear) during alignment to the reference grid.
+
+## National Wetlands Inventory (NWI) 
+Source: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)
+
+The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio with chunked processing to manage the large amount of features (1,000,000+) Polygons were classified by their cowardin code and separated into 3 distinct groupings: 
+0 = Non-wetland (background)
+1 = Wetland
+2 = Lowland conifer (PFO4, PSS4, PFO2, PSS2, mixed codes containing "/4")
+
+The encoding variants of the raster was evaluated during initial random forest experiments and the 3-class classification was found to give no measurable improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland
+
+## Distance Features
+Source: Minnesota statewide vector datasets
+Roads: MnDOT Roadway Routes
+Streams/rivers: DNR RiversStreams
+Water bodies: DNR HydroFeatures
+
+Euclidean distance rasters were computed from vector layers using GDAL proximity on MSI.
+
+## gNATSGO Organic Soils
+Source: gNATSGO for Minnesota 
+
+gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service's soils product. It merges SSURGO withs STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy:
+0: Non-organic
+1: Shallow Peat (histic epipedon, non-Histosol, 20–40cm organic)
+2: Terric Saprists
+3: Terric Hemists
+4: Terric Fibrists
+5: Typic Saprists
+6: Typic Hemists
+7: Typic Fibrists
+8: Sphagno Histosols
+
+A binary variant of this raster was also created that flags any mukey containing an organic component regardless of dominance. 
+
+Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as refernce/validation layers and used selectively in other peat property models. 
+
+## Categorical Layers
+
+These layers produced visible polygon shaped artifacts such as hard geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges from these rasters rather than responding to environmental gradients they were excluded. 
+
+10m_quaternary_geology.tif — Quaternary Geology classification
+pennockLandformClass.tif — Pennock Landform Class
+geomorphons.tif — geomorphon landform classification
+
+These were tested in experiments exp401–exp408 and removed in exp409/exp410. AUC cost was minimal (~0.002) and the visual output quality improved substantially.
+ 
+
 
