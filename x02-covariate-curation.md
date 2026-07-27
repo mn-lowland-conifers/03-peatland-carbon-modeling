@@ -1,14 +1,16 @@
 # Covariate Curation
 
-## Computing Environment
+### Computing Environment
 Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL (ABI mismatches, missing libpoppler, libtiff version conflicts). 
-## Reference Grid
+### Reference Grid
 All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data.
+
 Reference raster: gNATSGO 10m MUKEY raster
 Dimensions: 66,474 × 75,185 pixels
 CRS: EPSG:5070 (NAD83 / Conus Albers Equal Area)
 Origin: −99,098, 3,021,389
 Resolution: 10m
+
 ### Digital Elevation Model
 Source: USGS 3D Elevation Program (3DEP), 10m resolution
 Download: National Map Downloader, https://apps.nationalmap.gov/downloader/
@@ -18,6 +20,7 @@ minnesota_dem_10m.tif
 ### Terrain Derivatives (WhiteboxTools)
 WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. 
 Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process.
+
 ### Processing Strategy
 Two approaches were used depending if the derivative is affected by watershed context:
 Statewide: Computed directly on the statewide mosaicked DEM. These derivatives only require local information and do not depend on upstream drainage areas.
@@ -30,6 +33,7 @@ By HUC8 watershed: For derivatives that are impacted by flow patterns, a differe
 breached_dem (hydrologically conditioned DEM)
 d8FlowAccumulation, dInfFlowAccumulation
 wetnessIndex (TWI)
+
 ### Hydrological Modification
 Minnesota peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching approach was used to carve channels through barriers blocking drainage versus raising the surface itself. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values.
 Modification workflow by HUC8 watershed:
@@ -67,7 +71,7 @@ Streams: DNR RiversStreams (lines)
 Roads: MnDOT Roadway Routes (lines)
 Final terrain derivatives: slope.tif, aspect.tif, hillshade.tif, planCurvature.tif, profileCurvature.tif, maximalCurvature.tif, breached_dem.tif, d8FlowAccumulation.tif, dInfFlowAccumulation.tif, wetnessIndex.tif, devfrommeanelev_4m.tif, devfrommeanelev_8m.tif, devfrommeanelev_16m.tif, diffFromMeanElev.tif, relativeTopographicPosition_4m.tif, relativeTopographicPosition_8m.tif, relativeTopographicPosition_16m.tif, geomorphons.tif, pennockLandformClass.tif
 
-## Sentinel-2 Imagery
+### Sentinel-2 Imagery
 Source: COPERNICUS/S2_SR_HARMONIZED from Google Earth Engine
 Dates: 2019–2024
 Extent: Minnesota state boundary (TIGER/2018/States)
@@ -83,7 +87,7 @@ NDVI = (B08 − B04) / (B08 + B04) Normalized Difference Vegetation Index to qua
 SWDI = from Green (B03) and Red Edge 1 (B05) Soil Water Deficit Index sensitive to surface moisture
 Bands that were originally at a 20m resolution (B05–B08A, B11, B12) were resampled to 10m during the GEE export.
 
-### Sentinel 2 export and mosaicking
+### Sentinel 2 Export and Mosaicking
 
 GEE automatically tiled the whole state exports. Tiles were downloaded from google drive to local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.
 
@@ -99,13 +103,13 @@ Changes in the export (combining ascending and descending runs, extending date r
 Three bands per composite: VV (dB), VH (dB), VV/VH ratio.
 Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.
 
-## PRISM Climate data
+### PRISM Climate Data
 Source: PRISM Climate Group, 30-year normals at 800m
 Layers: Annual precipitation, mean July max temp, mean annual temp, mean January min temp
 
 PRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resampled to 10m (bilinear) during alignment to the reference grid.
 
-## National Wetlands Inventory (NWI) 
+### National Wetlands Inventory (NWI) 
 Source: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)
 
 The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio with chunked processing to manage the large amount of features (1,000,000+) Polygons were classified by their cowardin code and separated into 3 distinct groupings: 
@@ -115,7 +119,7 @@ The NWI vector data was converted and classified to a raster on MSI using fiona 
 
 The encoding variants of the raster was evaluated during initial random forest experiments and the 3-class classification was found to give no measurable improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland
 
-## Distance Features
+### Distance Features
 Source: Minnesota statewide vector datasets
 Roads: MnDOT Roadway Routes
 Streams/rivers: DNR RiversStreams
@@ -123,7 +127,7 @@ Water bodies: DNR HydroFeatures
 
 Euclidean distance rasters were computed from vector layers using GDAL proximity on MSI.
 
-## gNATSGO Organic Soils
+### gNATSGO Organic Soils
 Source: gNATSGO for Minnesota 
 
 gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service's soils product. It merges SSURGO withs STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy:
@@ -141,7 +145,7 @@ A binary variant of this raster was also created that flags any mukey containing
 
 Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as refernce/validation layers and used selectively in other peat property models. 
 
-## Categorical Layers
+### Categorical Layers
 
 These layers produced visible polygon shaped artifacts such as hard geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges from these rasters rather than responding to environmental gradients they were excluded. 
 
