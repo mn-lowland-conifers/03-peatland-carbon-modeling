@@ -1,6 +1,6 @@
-# Point data curation
+# Point Data Curation
 
-## Introduction to point data sources
+### Point Data Sources
 
 Peat presence, depth, and decomposition models were trained using soil observation data from three main
 sources: the Minnesota Peat Inventory, the National Soil Information System (NAISIS), and the Minnesota 
@@ -21,12 +21,12 @@ non peat communities were coded as peat absent.
 Together these sources provide a spatially distributed dataset across Minnesota.
 
 
-# Data curation methods
+## Data Curation Methods
 
 The final point datasets used to train each model were created by combining the data sources any applying 
 filters specific to each variable. 
 
-## Binary Presence/Absence Dataset
+### Binary Presence/Absence Dataset
 FINAL_binary_mn.csv (~60,000 points)
 This point dataset is used for binary classification models. It combines ALL points from the Minnesota peat 
 inventory, NASIS and the MBS. A new field was created in this set called peat_binary. Points that have a 
@@ -37,20 +37,20 @@ A secondary version (FINAL_binary_mn_0_20_dropped.csv) excludes points where pea
 between 1–20 cm. There are soils described in MN that have “duff” layers that can be classified as an
 O horizon but do not necessarily indicate a presence of true peat. (57,000)
 
-## Peat depth dataset
+### Peat Depth Dataset
 depb_points_mn.csv (45,878 points)
 A dataset of locations with confirmed peat depth measurements (depb in cm). Unlike the binary dataset,
 every point here has a measured depth value. This dataset is used for depth prediction models. Only non
 peat values with a MEASURED value of 0cm were added to this set (NASIS mineral points, mn peat inventory) 
 
-## Peat Inventory Data
+### Peat Inventory Data
 The Minnesota Peat Inventory contains lab data that was used for the carbon and organic decomposition models. First, all tables were merged into a horizon-level master table on site ID so that ash, carbon, bulk density, and classification were on the same table. The table had 35,142 horizons from 7,032 unique pedons.
 Missing top or bottom depths in horizons were filled using adjacent horizons when possible. Horizons that could not be corrected this way were flagged and either extended to the next horizon or a max depth of 200cm.
 SOC and Db were then gap filled using one of three methods based on existing data. 
 
-### Gap filling
+#### Gap Filling
 1. Measured lab data: used when available (SOC: 533 horizons, BD: 3,209 horizons).
-2. Ash regression: with horizons that were missing SOC or BD but had ash content, a linear regression (SOC~Ash and BD~Ash) was fit and used to predict the missing value (SOC~Ash R²=0.623; BD~Ash R²=0.579).
+2. Ash regression: with horizons that were missing SOC or BD but had ash content, a linear regression (SOC-Ash and BD-Ash) was fit and used to predict the missing value (SOC-Ash R²=0.623; BD-Ash R²=0.579).
 3. Random Forest: a random forest model was trained on von Post decomposition class, top/mid horizon depth, and horizon classification (Fibric, Hemic, Sapric). This performed poorly (SOC CV R²=‑0.051).
 4. Still missing: horizons with no von Post score either were left unfilled and excluded from carbon stock calculation
 
