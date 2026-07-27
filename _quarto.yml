@@ -10,7 +10,7 @@ book:
   cover-image: "aksdb-badge-02.png"
   
   chapters:
-    - index.qmd
+    - index.md
     - x01-point-data-curation.md
     - x02-covariate-curation.md
 	# add a chapter on X

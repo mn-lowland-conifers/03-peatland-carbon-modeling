@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>4&nbsp; Model Implementation – MN Peatland Carbon Modeling</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./x04-results.html" rel="next">
+<link href="./x02-covariate-curation.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x03-model-implementation.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">MN Peatland Carbon Modeling</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./x01-point-data-curation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./x02-covariate-curation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./x03-model-implementation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./x04-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Results</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./x05-discussion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Discussion</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./new-thing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">New thing I added</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Bibliography</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">5</span> Overview</a>
+  <ul class="collapse">
+  <li><a href="#cross-validation" id="toc-cross-validation" class="nav-link" data-scroll-target="#cross-validation"><span class="header-section-number">5.1</span> Cross-Validation</a>
+  <ul class="collapse">
+  <li><a href="#random-cross-validation" id="toc-random-cross-validation" class="nav-link" data-scroll-target="#random-cross-validation"><span class="header-section-number">5.1.1</span> Random cross-validation</a></li>
+  <li><a href="#spatial-block-cross-validation" id="toc-spatial-block-cross-validation" class="nav-link" data-scroll-target="#spatial-block-cross-validation"><span class="header-section-number">5.1.2</span> Spatial block cross-validation</a></li>
+  </ul></li>
+  <li><a href="#shared-modeling-decisions" id="toc-shared-modeling-decisions" class="nav-link" data-scroll-target="#shared-modeling-decisions"><span class="header-section-number">5.2</span> Shared Modeling Decisions</a>
+  <ul class="collapse">
+  <li><a href="#coordinate-reference-system" id="toc-coordinate-reference-system" class="nav-link" data-scroll-target="#coordinate-reference-system"><span class="header-section-number">5.2.1</span> Coordinate reference system</a></li>
+  <li><a href="#missing-data" id="toc-missing-data" class="nav-link" data-scroll-target="#missing-data"><span class="header-section-number">5.2.2</span> Missing Data</a></li>
+  <li><a href="#negative-prediction-clipping" id="toc-negative-prediction-clipping" class="nav-link" data-scroll-target="#negative-prediction-clipping"><span class="header-section-number">5.2.3</span> Negative prediction clipping</a></li>
+  <li><a href="#model-catalog" id="toc-model-catalog" class="nav-link" data-scroll-target="#model-catalog"><span class="header-section-number">5.2.4</span> Model Catalog</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#peat-probability" id="toc-peat-probability" class="nav-link" data-scroll-target="#peat-probability"><span class="header-section-number">6</span> Peat Probability</a></li>
+  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest"><span class="header-section-number">7</span> Random Forest</a>
+  <ul class="collapse">
+  <li><a href="#training-data" id="toc-training-data" class="nav-link" data-scroll-target="#training-data"><span class="header-section-number">7.1</span> Training Data</a></li>
+  <li><a href="#covariate-development-and-categorical-features" id="toc-covariate-development-and-categorical-features" class="nav-link" data-scroll-target="#covariate-development-and-categorical-features"><span class="header-section-number">7.2</span> Covariate Development and Categorical Features</a>
+  <ul class="collapse">
+  <li><a href="#exclusion-of-peat-refernce-layers" id="toc-exclusion-of-peat-refernce-layers" class="nav-link" data-scroll-target="#exclusion-of-peat-refernce-layers"><span class="header-section-number">7.2.1</span> Exclusion of Peat Refernce Layers</a></li>
+  <li><a href="#categorical-one-hot-covariates-and-polygon-artifacts" id="toc-categorical-one-hot-covariates-and-polygon-artifacts" class="nav-link" data-scroll-target="#categorical-one-hot-covariates-and-polygon-artifacts"><span class="header-section-number">7.2.2</span> Categorical one-hot covariates and polygon artifacts</a></li>
+  <li><a href="#national-wetlands-inventory-encoding" id="toc-national-wetlands-inventory-encoding" class="nav-link" data-scroll-target="#national-wetlands-inventory-encoding"><span class="header-section-number">7.2.3</span> National Wetlands Inventory Encoding</a></li>
+  <li><a href="#recursive-feature-elimination" id="toc-recursive-feature-elimination" class="nav-link" data-scroll-target="#recursive-feature-elimination"><span class="header-section-number">7.2.4</span> Recursive Feature elimination</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#gradient-boosting-xgboost-and-lightgbm" id="toc-gradient-boosting-xgboost-and-lightgbm" class="nav-link" data-scroll-target="#gradient-boosting-xgboost-and-lightgbm"><span class="header-section-number">8</span> Gradient Boosting (XGBoost and LightGBM)</a>
+  <ul class="collapse">
+  <li><a href="#point_id-correction" id="toc-point_id-correction" class="nav-link" data-scroll-target="#point_id-correction"><span class="header-section-number">8.1</span> Point_ID Correction</a></li>
+  </ul></li>
+  <li><a href="#generalized-additive-model-gam" id="toc-generalized-additive-model-gam" class="nav-link" data-scroll-target="#generalized-additive-model-gam"><span class="header-section-number">9</span> Generalized Additive Model (GAM)</a></li>
+  <li><a href="#support-vector-machine" id="toc-support-vector-machine" class="nav-link" data-scroll-target="#support-vector-machine"><span class="header-section-number">10</span> Support Vector Machine</a></li>
+  <li><a href="#logistic-regression-prob_lr_001" id="toc-logistic-regression-prob_lr_001" class="nav-link" data-scroll-target="#logistic-regression-prob_lr_001"><span class="header-section-number">11</span> Logistic Regression (PROB_LR_001)</a></li>
+  <li><a href="#convolutional-neural-network-cnn" id="toc-convolutional-neural-network-cnn" class="nav-link" data-scroll-target="#convolutional-neural-network-cnn"><span class="header-section-number">12</span> Convolutional Neural Network (CNN))</a></li>
+  <li><a href="#probability-threshold-optimization" id="toc-probability-threshold-optimization" class="nav-link" data-scroll-target="#probability-threshold-optimization"><span class="header-section-number">13</span> Probability Threshold Optimization</a>
+  <ul class="collapse">
+  <li><a href="#model-selection" id="toc-model-selection" class="nav-link" data-scroll-target="#model-selection"><span class="header-section-number">13.1</span> Model Selection</a></li>
+  </ul></li>
+  <li><a href="#peat-depth" id="toc-peat-depth" class="nav-link" data-scroll-target="#peat-depth"><span class="header-section-number">14</span> Peat Depth</a></li>
+  <li><a href="#organic-decomposition" id="toc-organic-decomposition" class="nav-link" data-scroll-target="#organic-decomposition"><span class="header-section-number">15</span> Organic decomposition</a></li>
+  <li><a href="#below-ground-carbon" id="toc-below-ground-carbon" class="nav-link" data-scroll-target="#below-ground-carbon"><span class="header-section-number">16</span> Below ground Carbon</a></li>
+  <li><a href="#above-ground-carbon" id="toc-above-ground-carbon" class="nav-link" data-scroll-target="#above-ground-carbon"><span class="header-section-number">17</span> Above ground Carbon</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This section goes over the development and evaluation of models created to predict peat presence and related peat properties. The modeling workflow had four steps: (1) training data curation for each property being modeled. (2) feature selection using recursive feature elimination. (3) model training and hyperparameter tuning. (4) model evaluation using both random and spatial cross validation. Six types of models were evaluated and coded using Python 3.8 using scikit learn.</p>
+<section id="overview" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Overview</h1>
+<section id="cross-validation" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="cross-validation"><span class="header-section-number">5.1</span> Cross-Validation</h2>
+<p>Two cross-validation strategies were used in model development and are reported alongside each models results</p>
+<section id="random-cross-validation" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="random-cross-validation"><span class="header-section-number">5.1.1</span> Random cross-validation</h3>
+<p>Random cross-validation used stratified k-fold splitting (k=5) and randomly assigned observations to folds. This approach is standard in machine learning but it can create bias when training points that are spatially clustered. Because nearby points tend to have similar covariate values, a randomly held out point may be geographically adjacent to a training point which allows the model to interpolate instead of generalize. This can inflate the metrics used to evaluate the effectiveness of models.</p>
+</section>
+<section id="spatial-block-cross-validation" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="spatial-block-cross-validation"><span class="header-section-number">5.1.2</span> Spatial block cross-validation</h3>
+<p>Spatial block cross-validation was used to replicate ture independant validation. The boundary of the spatial model (state of Minnesota) was split into a 50 xm x 50 km grid. All training points that shared a block were assigned to the same fold, with blocks allocated to folds in a round robin. When a block is held out for validation the model has never seen any training point with that geographic region forcing the model to generalize across the space instead of making an interpretation using local data. This method produces a lower but more reliable performance estimate and is the primary reported metric for models. The performance drop between the random and spatial cross-validation observed across the models reflects spatial autocorrelation in the training data.</p>
+</section>
+</section>
+<section id="shared-modeling-decisions" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="shared-modeling-decisions"><span class="header-section-number">5.2</span> Shared Modeling Decisions</h2>
+<p>Several decision were consistant across all target properties and model types.</p>
+<section id="coordinate-reference-system" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="coordinate-reference-system"><span class="header-section-number">5.2.1</span> Coordinate reference system</h3>
+<p>All training points and covariates were projected to EPSG:5070 (Albers Equal Area Conic, NAD83) before modeling. Spatial block fold assignment used projected coordinates.</p>
+</section>
+<section id="missing-data" class="level3" data-number="5.2.2">
+<h3 data-number="5.2.2" class="anchored" data-anchor-id="missing-data"><span class="header-section-number">5.2.2</span> Missing Data</h3>
+<p>Features with missing values at training point locations were imputed with the column median computed from training data only. This primarily impacted distance based features at edge locations and Sentinel-1 backscatter features where coverage was incomplete (~45% of training points).</p>
+</section>
+<section id="negative-prediction-clipping" class="level3" data-number="5.2.3">
+<h3 data-number="5.2.3" class="anchored" data-anchor-id="negative-prediction-clipping"><span class="header-section-number">5.2.3</span> Negative prediction clipping</h3>
+<p>Depth regression models (XGBoost, LightGBM, GAM, SVM) can produce negative predictions. This mainly impacted the peat depth model. All negative depth predictions were clipped to zero at inference time.</p>
+<p>***NOTE have not ran other approaches to get non-negative outputs. (ie Tweedie or Gamma loss function)</p>
+</section>
+<section id="model-catalog" class="level3" data-number="5.2.4">
+<h3 data-number="5.2.4" class="anchored" data-anchor-id="model-catalog"><span class="header-section-number">5.2.4</span> Model Catalog</h3>
+<p>All trained models, their feature sets, parameters, cross-validation metrics, and output file paths are documented in a model catalog (MODEL_CATALOG.csv). Model codes follow the convention {TARGET}<em>{ALGORITHM}</em>{VERSION} (e.g., PROB_RF_001, DEPTH_CNN_002).</p>
+</section>
+</section>
+</section>
+<section id="peat-probability" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Peat Probability</h1>
+</section>
+<section id="random-forest" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Random Forest</h1>
+<section id="training-data" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="training-data"><span class="header-section-number">7.1</span> Training Data</h2>
+<p>The peat probability models were trained on the peat binary presence/absence dataset compiled from the DNR peat inventory, NASIS, and the MBS. The initial compiled dataset contained ~102,000 points. One of the preprocessing decisions made was to exclude observations that contained an organic layer thickness of 0-20cm. These shallow observations often represent ‘duff layers,’ or thin accumulations of organic matter such a leaf litter on the forest floor and often do not indicate the presence of a true histosol. After applying this filter the final training dataset contained 57,134 points of which 32% were peat and 68% as non peat.</p>
+</section>
+<section id="covariate-development-and-categorical-features" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="covariate-development-and-categorical-features"><span class="header-section-number">7.2</span> Covariate Development and Categorical Features</h2>
+<p>The initial covariate stack contained 77 features including terrain derivatives, satellite imagery, and spatial datasets. Several decision were made during processing that influenced the final feature set.</p>
+<section id="exclusion-of-peat-refernce-layers" class="level3" data-number="7.2.1">
+<h3 data-number="7.2.1" class="anchored" data-anchor-id="exclusion-of-peat-refernce-layers"><span class="header-section-number">7.2.1</span> Exclusion of Peat Refernce Layers</h3>
+<p>Early models (exp201, exp301-303) included peat reference layers as predictive features; histosol rasters, gNATSGO organic component classifications, National Peatland Classification peatland indicators, and NWI wetland layers. These experiments produces inflated AUC values (exp201 AUC=0.994) because the model was learning to reproduce the reference maps instead of independently predicting peat from the landscape covariates. The prevent the model from using circular logic peat reference maps were excluded from the feature set.</p>
+</section>
+<section id="categorical-one-hot-covariates-and-polygon-artifacts" class="level3" data-number="7.2.2">
+<h3 data-number="7.2.2" class="anchored" data-anchor-id="categorical-one-hot-covariates-and-polygon-artifacts"><span class="header-section-number">7.2.2</span> Categorical one-hot covariates and polygon artifacts</h3>
+<p>Early experiments (exp401-408) included categorical raster layers encoded as one-hot features: quaternary geology classification, Pennock landform class, and geopmorphons. These covariates produced visible polygon shaped artifacts in the output inferences such as hard geometric edges corresponding to vector boundaries. Because these boundaries reflected mapped units rather than a continuous peat forming process the model learned to abruptly change predictions at polygon edges.</p>
+<p>Experiments exp409 and exp410 removed all categorical one-hot features. The AUC cost was minimal (exp407 with categoricals: 0.9740, exp410 without: 0.9722), but the visual quality of the inference was improved substantially. Exp410 was selected as the best RF peat probability model on due to its visual coherence and marginal AUC difference.</p>
+</section>
+<section id="national-wetlands-inventory-encoding" class="level3" data-number="7.2.3">
+<h3 data-number="7.2.3" class="anchored" data-anchor-id="national-wetlands-inventory-encoding"><span class="header-section-number">7.2.3</span> National Wetlands Inventory Encoding</h3>
+<p>Three NWI encoding strategies were evaluated across experiments exp404-408: - 3-class encoding (0=upland, 1-palustrine, 2=lacustrine/riverine): exp403, 406 - Binary encoding (0=non-wetland, 1=any wetland class): exp404, 407 - NWI excluded entirely: exp405, 408</p>
+<p>NWI contributed minimally when tested on the full dataset (exp403-405, AUC ~0.955-0.957). On the 0-20cm dropped dataset (exp406-408, AUC 0.973-0.974) the differences were negligible between strategies. Binary encoding was kept in the final rf model because it preserved meaningful wetland/non-wetland discrimination without creating polygon artifacts.</p>
+</section>
+<section id="recursive-feature-elimination" class="level3" data-number="7.2.4">
+<h3 data-number="7.2.4" class="anchored" data-anchor-id="recursive-feature-elimination"><span class="header-section-number">7.2.4</span> Recursive Feature elimination</h3>
+<p>After categorical features were dropped, excluding NWI binary, recursive feature elimination was applied to reduce the amount of covariates used in the model. A random forest classifier with 200 trees was trained using 5-fold cross validation at each iteration. The feature with the lowest mean impurity-based importance across folds was dropped at each iteration. The process continued until AUC was reduced by more then 0.5 points from the maximum. This process reduced the final covariate stack from a total of 77 features to 41.</p>
+<p>The set of 41 retained: -All 12 sentinel-2 spring bands -Selected summer and fall bands -Tasseled Cap componentes across all seasons -Terrain derivatives (DEM, slope, wetness index, flow accumulation, curvature, deviation from mean elevation) -PRISM climate normals NWI binary wetland indicator -Distance features (to water, streams, roads, waterbody edge)</p>
+<p>Exp410 was chosen as the final random forest production model. It used 41 features with 500 trees, square root of features considered at each split, and a minimum of 1 sample per leaf.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Random CV</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9722</td>
+<td>0.9567</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.9193</td>
+<td>0.8861</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.327)</td>
+<td>0.8445</td>
+<td>0.8061</td>
+</tr>
+<tr class="even">
+<td>n</td>
+<td>57,134</td>
+<td>57,134</td>
+</tr>
+</tbody>
+</table>
+<p>The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where nearby observations are more similar and random folds overestimate performance.</p>
+</section>
+</section>
+</section>
+<section id="gradient-boosting-xgboost-and-lightgbm" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Gradient Boosting (XGBoost and LightGBM)</h1>
+<p>XGBoost and LightGBM were trained using spatial block cv. Class imbalance was addressed with ‘scale_pos_weight’ set on the ratio of negative to positive training examples.</p>
+<section id="point_id-correction" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="point_id-correction"><span class="header-section-number">8.1</span> Point_ID Correction</h2>
+<p>The first runs of the gradient boosting models (PROB_XGB_001, PROB_LGBM_001) included ‘point_id’ in the feature set. During spatial inference the point_id feature was assigned a constant fill value (0 or column median) across all pixels, which placed predictions far outside the training distribution for the feature the model had as high performance. This resulted in overconfidence of the model and peat probability predictions were 0.98-1.00 in tiles where the RF model predicted in the 0.20 range.</p>
+<p>Corrected models (PROB_XGB_002, PROB_LGBM_002) were retrained using 76 features with point_id dropped. Cross-validated AUC was essentially the same confirming that point_id had no predictive signal.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Spatial CV AUC</th>
+<th>Avg Precision</th>
+<th>F1</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>XGBoost (PROB_XGB_002)</td>
+<td>0.9615</td>
+<td>0.8892</td>
+<td>0.8105</td>
+<td>57,134</td>
+</tr>
+<tr class="even">
+<td>LightGBM (PROB_LGBM_002)</td>
+<td>0.9624</td>
+<td>0.8917</td>
+<td>0.8152</td>
+<td>57,134</td>
+</tr>
+</tbody>
+</table>
+<p>Random cv AUC for LightGBM (PROB_LGBM_001) was 0.9965 which was an overestimate caused by spatial autocorrelation and point_id leakage.</p>
+</section>
+</section>
+<section id="generalized-additive-model-gam" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Generalized Additive Model (GAM)</h1>
+<p>A Logistic GAM was fit using the pygam library with thin-plate spline terms for each of the 76 features. Due to the high memory complexity needed every cross-validation fold was trained on a balanced subsample of 30,000 observations (15,000 peat, 15,000 non-peat).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9544</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8567</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.754)</td>
+<td>0.7957</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="support-vector-machine" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> Support Vector Machine</h1>
+<p>A Support Vector Classifier with RBF kernel standardized with StandardScaler was also run. Because of memory complexity of kernel SVM, each fold used a subsample of the training points that included 15,000 training observations (7,500 peat, 7,500 non-peat) with predictions generated on the full held-out fold. Hyperparameters: C = 1.0, gamma = ‘scale’, class_weight = ‘balanced’.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9525</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8528</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.764)</td>
+<td>0.8010</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="logistic-regression-prob_lr_001" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Logistic Regression (PROB_LR_001)</h1>
+<p>Logistic regression model with L2 regularization as a linear baseline. Fit on the 76 features and standardized with StandardScaler. Solver: lbfgs, C = 1.0, class_weight = ‘balanced’.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9454</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8139</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.754)</td>
+<td>0.7756</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="convolutional-neural-network-cnn" class="level1" data-number="12">
+<h1 data-number="12"><span class="header-section-number">12</span> Convolutional Neural Network (CNN))</h1>
+</section>
+<section id="probability-threshold-optimization" class="level1" data-number="13">
+<h1 data-number="13"><span class="header-section-number">13</span> Probability Threshold Optimization</h1>
+<p>When creating a spatial output from the peat probability models, the output must be thresholded to determine what probability range is considered peat and what range is considered non-peat. Three threshold metrics were evaluated by sweeping 200 equally-spaced values from 0 to 1 across spatial CV out-of-fold predictions:</p>
+<ul>
+<li>F1-optimal: maximizes the harmonic mean of precision and recall</li>
+<li>Youden’s J: maximizes sensitivity + specificity − 1</li>
+<li>G-mean: geometric mean of sensitivity and specificity (resulted in identical results to Youden’s J)</li>
+</ul>
+<p>The first threshold used after initial inferences were made was 0.50 and did a poor job visually by underpredicting peat. Areas identifiable from aerial imagery were excluded at this threshold. The F1-optimal threshold of 0.327 was the final selection. At this threshold the RF model correctly identifies 85% of true peat observations (sensitivity = 0.85) with a precision of 0.84. The Youden’s J threshold (0.186) was tested but not used as it predicted peat too often and had a false positive rate of ~25%.</p>
+<p>The F1-optimal threshold of 0.327 was also used as the peat probability mask for the various peat property models that were run exclusively on areas were peat is likely to exist (depth, organic decomposition)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 17%">
+<col style="width: 16%">
+<col style="width: 23%">
+<col style="width: 17%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>F1 Threshold</th>
+<th>Youden’s J</th>
+<th>F1 at Threshold</th>
+<th>Sensitivity</th>
+<th>Precision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RF</td>
+<td>0.327</td>
+<td>0.186</td>
+<td>0.845</td>
+<td>0.850</td>
+<td>0.839</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>0.598</td>
+<td>0.342</td>
+<td>0.816</td>
+<td>0.828</td>
+<td>0.804</td>
+</tr>
+<tr class="odd">
+<td>LightGBM</td>
+<td>0.699</td>
+<td>0.327</td>
+<td>0.816</td>
+<td>0.787</td>
+<td>0.847</td>
+</tr>
+<tr class="even">
+<td>GAM</td>
+<td>0.754</td>
+<td>0.578</td>
+<td>0.796</td>
+<td>0.812</td>
+<td>0.780</td>
+</tr>
+<tr class="odd">
+<td>SVM RBF</td>
+<td>0.764</td>
+<td>0.493</td>
+<td>0.801</td>
+<td>0.815</td>
+<td>0.788</td>
+</tr>
+<tr class="even">
+<td>Log. Reg.</td>
+<td>0.754</td>
+<td>0.578</td>
+<td>0.776</td>
+<td>0.788</td>
+<td>0.764</td>
+</tr>
+<tr class="odd">
+<td>CNN 15×15</td>
+<td>0.829</td>
+<td>0.774</td>
+<td>0.731</td>
+<td>0.752</td>
+<td>0.712</td>
+</tr>
+<tr class="even">
+<td>CNN 31×31 v2</td>
+<td>0.764</td>
+<td>0.694</td>
+<td>0.808</td>
+<td>0.786</td>
+<td>0.832</td>
+</tr>
+<tr class="odd">
+<td>CNN 31×31 v3</td>
+<td>0.764</td>
+<td>0.694</td>
+<td>0.853</td>
+<td>0.853</td>
+<td>0.853</td>
+</tr>
+</tbody>
+</table>
+<p>The large difference between F1-optimal and Youden’s J thresholds for GAM, SVM, and CNN models shows their compressed probability distributions. Each of these models require high thresholds to get balanced precision/recall because their outputs are not calibrated to the true class prevalence.</p>
+<section id="model-selection" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="model-selection"><span class="header-section-number">13.1</span> Model Selection</h2>
+<p>All probability models were evaluated on spatial block cross-validation AUC as the primary selection criterion, with F1 at optimal threshold and average precision as secondary metrics. The performance of each model is shown below.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Spatial AUC</th>
+<th>Random AUC</th>
+<th>Avg Precision</th>
+<th>F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RF (PROB_RF_001)</td>
+<td>0.9567</td>
+<td>0.9722</td>
+<td>0.8861</td>
+<td>0.8061</td>
+</tr>
+<tr class="even">
+<td>XGBoost (PROB_XGB_002)</td>
+<td>0.9615</td>
+<td>—</td>
+<td>0.8892</td>
+<td>0.8105</td>
+</tr>
+<tr class="odd">
+<td>LightGBM (PROB_LGBM_002)</td>
+<td>0.9624</td>
+<td>—</td>
+<td>0.8917</td>
+<td>0.8152</td>
+</tr>
+<tr class="even">
+<td>GAM (PROB_GAM_001)</td>
+<td>0.9544</td>
+<td>—</td>
+<td>0.8567</td>
+<td>0.7957</td>
+</tr>
+<tr class="odd">
+<td>SVM RBF (PROB_SVM_001)</td>
+<td>0.9525</td>
+<td>—</td>
+<td>0.8528</td>
+<td>0.8010</td>
+</tr>
+<tr class="even">
+<td>Log. Reg. (PROB_LR_001)</td>
+<td>0.9454</td>
+<td>—</td>
+<td>0.8139</td>
+<td>0.7756</td>
+</tr>
+<tr class="odd">
+<td>CNN 15×15 (PROB_CNN_001)</td>
+<td>0.8914</td>
+<td>—</td>
+<td>0.7690</td>
+<td>0.7313</td>
+</tr>
+<tr class="even">
+<td>CNN 31×31 (PROB_CNN_003)</td>
+<td>0.9621</td>
+<td>—</td>
+<td>0.9302</td>
+<td>0.8527</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="peat-depth" class="level1" data-number="14">
+<h1 data-number="14"><span class="header-section-number">14</span> Peat Depth</h1>
+</section>
+<section id="organic-decomposition" class="level1" data-number="15">
+<h1 data-number="15"><span class="header-section-number">15</span> Organic decomposition</h1>
+</section>
+<section id="below-ground-carbon" class="level1" data-number="16">
+<h1 data-number="16"><span class="header-section-number">16</span> Below ground Carbon</h1>
+</section>
+<section id="above-ground-carbon" class="level1" data-number="17">
+<h1 data-number="17"><span class="header-section-number">17</span> Above ground Carbon</h1>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./x02-covariate-curation.html" class="pagination-link" aria-label="Covariate Curation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./x04-results.html" class="pagination-link" aria-label="Results">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Results</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

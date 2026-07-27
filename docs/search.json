@@ -28,5 +28,215 @@
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]
+  },
+  {
+    "objectID": "x01-point-data-curation.html",
+    "href": "x01-point-data-curation.html",
+    "title": "2  Point data curation",
+    "section": "",
+    "text": "2.1 Introduction to point data sources\nPeat presence, depth, and decomposition models were trained using soil observation data from three main sources: the Minnesota Peat Inventory, the National Soil Information System (NAISIS), and the Minnesota Biological Survey (MBS).\nThe Minnesota Peat Inventory is a dataset collected by the Minnesota DNR during the 1970’s and 80’s. It contains probe measurement peat depths across peatlands in Minnesota as well as laboratory analyzed data including von post decomposition class, bulk density, carbon content, ash content, among other metrics at a horizon level.\nNASIS is the USDA’s Natural Resource Conservation Services data set that populates soil survey. The dataset contains soil profile descriptions of both mineral and organic soils across the country.\nThe Minnesota Biological Survey contribues presence and absence observations derived from native plant community classifications where peat associated community types were coded as peat present and upland or non peat communities were coded as peat absent.\nTogether these sources provide a spatially distributed dataset across Minnesota.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Point data curation</span>"
+    ]
+  },
+  {
+    "objectID": "x01-point-data-curation.html#binary-presenceabsence-dataset",
+    "href": "x01-point-data-curation.html#binary-presenceabsence-dataset",
+    "title": "2  Point data curation",
+    "section": "3.1 Binary Presence/Absence Dataset",
+    "text": "3.1 Binary Presence/Absence Dataset\nFINAL_binary_mn.csv (~60,000 points) This point dataset is used for binary classification models. It combines ALL points from the Minnesota peat inventory, NASIS and the MBS. A new field was created in this set called peat_binary. Points that have a depth that is greater than 0cm get a value of 1, and points that contain a depth value of 0cm are assigned a 0. peat_binary 1 (peat present) or 0 (peat absent).\nA secondary version (FINAL_binary_mn_0_20_dropped.csv) excludes points where peat depth was measured between 1–20 cm. There are soils described in MN that have “duff” layers that can be classified as an O horizon but do not necessarily indicate a presence of true peat. (57,000)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Point data curation</span>"
+    ]
+  },
+  {
+    "objectID": "x01-point-data-curation.html#peat-depth-dataset",
+    "href": "x01-point-data-curation.html#peat-depth-dataset",
+    "title": "2  Point data curation",
+    "section": "3.2 Peat depth dataset",
+    "text": "3.2 Peat depth dataset\ndepb_points_mn.csv (45,878 points) A dataset of locations with confirmed peat depth measurements (depb in cm). Unlike the binary dataset, every point here has a measured depth value. This dataset is used for depth prediction models. Only non peat values with a MEASURED value of 0cm were added to this set (NASIS mineral points, mn peat inventory)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Point data curation</span>"
+    ]
+  },
+  {
+    "objectID": "x01-point-data-curation.html#peat-inventory-data",
+    "href": "x01-point-data-curation.html#peat-inventory-data",
+    "title": "2  Point data curation",
+    "section": "3.3 Peat Inventory Data",
+    "text": "3.3 Peat Inventory Data\nThe Minnesota Peat Inventory contains lab data that was used for the carbon and organic decomposition models. First, all tables were merged into a horizon-level master table on site ID so that ash, carbon, bulk density, and classification were on the same table. The table had 35,142 horizons from 7,032 unique pedons. Missing top or bottom depths in horizons were filled using adjacent horizons when possible. Horizons that could not be corrected this way were flagged and either extended to the next horizon or a max depth of 200cm. SOC and Db were then gap filled using one of three methods based on existing data.\n\n3.3.1 Gap filling\n\nMeasured lab data: used when available (SOC: 533 horizons, BD: 3,209 horizons).\nAsh regression: with horizons that were missing SOC or BD but had ash content, a linear regression (SOC~Ash and BD~Ash) was fit and used to predict the missing value (SOC~Ash R²=0.623; BD~Ash R²=0.579).\nRandom Forest: a random forest model was trained on von Post decomposition class, top/mid horizon depth, and horizon classification (Fibric, Hemic, Sapric). This performed poorly (SOC CV R²=‑0.051).\nStill missing: horizons with no von Post score either were left unfilled and excluded from carbon stock calculation\n\nBecause the rf fill performed poorly this was determined to be a property of the data as the SOC in peat stays relativly constant (mean 50.67% and a std of 4.77%). So there is little variance for the rf features to explain. Db was found to be more variable than SOC and a class mean fill for Db would have more uncertainty than SOC. After gap filling was complete the filled values were flagged by the method used to track data quality: Tier 1: no RF-filled values used (measured or ash-regression only, 503 pedons, 13.1%) Tier 2: some RF-filled values (under 50% of horizons, 202 pedons, 5.3%) Tier 3: majority RF-filled (over 50% of horizons, 3,123 pedons, 81.6%)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Point data curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html",
+    "href": "x02-covariate-curation.html",
+    "title": "3  Covariate Curation",
+    "section": "",
+    "text": "3.1 Computing Environment\nProcessing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL (ABI mismatches, missing libpoppler, libtiff version conflicts). ## Reference Grid All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data. Reference raster: gNATSGO 10m MUKEY raster Dimensions: 66,474 × 75,185 pixels CRS: EPSG:5070 (NAD83 / Conus Albers Equal Area) Origin: −99,098, 3,021,389 Resolution: 10m ### Digital Elevation Model Source: USGS 3D Elevation Program (3DEP), 10m resolution Download: National Map Downloader, https://apps.nationalmap.gov/downloader/ Tiles mosaicked into a single statewide raster and clipped to the Minnesota state boundary using GDAL warp with output CRS forced to EPSG:5070 minnesota_dem_10m.tif",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#computing-environment",
+    "href": "x02-covariate-curation.html#computing-environment",
+    "title": "3  Covariate Curation",
+    "section": "",
+    "text": "3.1.1 Terrain Derivatives (WhiteboxTools)\nWhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process. ### Processing Strategy Two approaches were used depending if the derivative is affected by watershed context: Statewide: Computed directly on the statewide mosaicked DEM. These derivatives only require local information and do not depend on upstream drainage areas. slope, aspect, hillshade planCurvature, profileCurvature, meanCurvature, maximalCurvature geomorphons, pennockLandformClass devfrommeanelev (4m, 8m, 16m), diffFromMeanElev relativeTopographicPosition (4m, 8m, 16m) By HUC8 watershed: For derivatives that are impacted by flow patterns, a different approach was used. Minnesota was divided into 127 HUC8 watersheds and a 5km buffer was applied around each HUC8. This was done to prevent potential edge effects from occurring. Derivatives were computed on each buffered watershed tile independently with individual SLURM jobs (one per HUC8), then mosaicked back together with the overlapping buffer zones removed. breached_dem (hydrologically conditioned DEM) d8FlowAccumulation, dInfFlowAccumulation wetnessIndex (TWI) ### Hydrological Modification Minnesota peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching approach was used to carve channels through barriers blocking drainage versus raising the surface itself. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values. Modification workflow by HUC8 watershed: Step Tool Output Purpose 1 FillSingleCellPits _01_fscp.tif Remove single-cell LiDAR artifacts 2 FlattenLakes _02_flat.tif Flatten lake surfaces to minimum elevation 3 TopologicalBreachBurn _03_tbb.tif Burn stream network into DEM 4 BreachDepressionsLeastCost _04_bdlc.tif Breach through road embankments and barriers 5 FillSingleCellPits _05_fel.tif Final cleanup\nParameters: TopologicalBreachBurn snap = 2.0m (2-cell tolerance at 1m resolution for stream/DEM alignment) BreachDepressionsLeastCost dist = 100 cells (100m max breach length), max_cost = 1.0m Input datasets: Lakes: DNR HydroFeatures (polygons) Streams: DNR RiversStreams (lines) Roads: MnDOT Roadway Routes (lines) Final terrain derivatives: slope.tif, aspect.tif, hillshade.tif, planCurvature.tif, profileCurvature.tif, maximalCurvature.tif, breached_dem.tif, d8FlowAccumulation.tif, dInfFlowAccumulation.tif, wetnessIndex.tif, devfrommeanelev_4m.tif, devfrommeanelev_8m.tif, devfrommeanelev_16m.tif, diffFromMeanElev.tif, relativeTopographicPosition_4m.tif, relativeTopographicPosition_8m.tif, relativeTopographicPosition_16m.tif, geomorphons.tif, pennockLandformClass.tif",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#sentinel-2-imagery",
+    "href": "x02-covariate-curation.html#sentinel-2-imagery",
+    "title": "3  Covariate Curation",
+    "section": "3.2 Sentinel-2 Imagery",
+    "text": "3.2 Sentinel-2 Imagery\nSource: COPERNICUS/S2_SR_HARMONIZED from Google Earth Engine Dates: 2019–2024 Extent: Minnesota state boundary (TIGER/2018/States) Seasonal Compositing Three seasonal median composites were generated: Spring (April–May): cloud and snow masked Summer (June–August): cloud masked Fall (September–October): cloud and snow masked Cloud masking used SCL layer excluding: cloud shadows (class 3), medium cloud (class 8), high cloud (class 9), thin cirrus (class 10). Per-image pre-filter excluded scenes &gt;30% cloud cover. Snow/ice (class 11) masked for spring and fall.\nIn total there were 10 bands per season: B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12 and 2 additional bands were calculated: NDVI = (B08 − B04) / (B08 + B04) Normalized Difference Vegetation Index to quantify vegetation health and density SWDI = from Green (B03) and Red Edge 1 (B05) Soil Water Deficit Index sensitive to surface moisture Bands that were originally at a 20m resolution (B05–B08A, B11, B12) were resampled to 10m during the GEE export.\n\n3.2.1 Sentinel 2 export and mosaicking\nGEE automatically tiled the whole state exports. Tiles were downloaded from google drive to local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.\n\n\n3.2.2 Tasseled Cap\nTasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), greenness(TCG), and wetness(TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs. spring/fall)\n\n\n3.2.3 Sentinel-1\nStill in the works* Original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, while limited, S1 survived RFE and increased R2 values Changes in the export (combining ascending and descending runs, extending date range) will hopefully fill the missing data: Three bands per composite: VV (dB), VH (dB), VV/VH ratio. Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#prism-climate-data",
+    "href": "x02-covariate-curation.html#prism-climate-data",
+    "title": "3  Covariate Curation",
+    "section": "3.3 PRISM Climate data",
+    "text": "3.3 PRISM Climate data\nSource: PRISM Climate Group, 30-year normals at 800m Layers: Annual precipitation, mean July max temp, mean annual temp, mean January min temp\nPRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resampled to 10m (bilinear) during alignment to the reference grid.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#national-wetlands-inventory-nwi",
+    "href": "x02-covariate-curation.html#national-wetlands-inventory-nwi",
+    "title": "3  Covariate Curation",
+    "section": "3.4 National Wetlands Inventory (NWI)",
+    "text": "3.4 National Wetlands Inventory (NWI)\nSource: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)\nThe NWI vector data was converted and classified to a raster on MSI using fiona and rasterio with chunked processing to manage the large amount of features (1,000,000+) Polygons were classified by their cowardin code and separated into 3 distinct groupings: 0 = Non-wetland (background) 1 = Wetland 2 = Lowland conifer (PFO4, PSS4, PFO2, PSS2, mixed codes containing “/4”)\nThe encoding variants of the raster was evaluated during initial random forest experiments and the 3-class classification was found to give no measurable improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#distance-features",
+    "href": "x02-covariate-curation.html#distance-features",
+    "title": "3  Covariate Curation",
+    "section": "3.5 Distance Features",
+    "text": "3.5 Distance Features\nSource: Minnesota statewide vector datasets Roads: MnDOT Roadway Routes Streams/rivers: DNR RiversStreams Water bodies: DNR HydroFeatures\nEuclidean distance rasters were computed from vector layers using GDAL proximity on MSI.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#gnatsgo-organic-soils",
+    "href": "x02-covariate-curation.html#gnatsgo-organic-soils",
+    "title": "3  Covariate Curation",
+    "section": "3.6 gNATSGO Organic Soils",
+    "text": "3.6 gNATSGO Organic Soils\nSource: gNATSGO for Minnesota\ngNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service’s soils product. It merges SSURGO withs STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy: 0: Non-organic 1: Shallow Peat (histic epipedon, non-Histosol, 20–40cm organic) 2: Terric Saprists 3: Terric Hemists 4: Terric Fibrists 5: Typic Saprists 6: Typic Hemists 7: Typic Fibrists 8: Sphagno Histosols\nA binary variant of this raster was also created that flags any mukey containing an organic component regardless of dominance.\nBoth gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as refernce/validation layers and used selectively in other peat property models.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x02-covariate-curation.html#categorical-layers",
+    "href": "x02-covariate-curation.html#categorical-layers",
+    "title": "3  Covariate Curation",
+    "section": "3.7 Categorical Layers",
+    "text": "3.7 Categorical Layers\nThese layers produced visible polygon shaped artifacts such as hard geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges from these rasters rather than responding to environmental gradients they were excluded.\n10m_quaternary_geology.tif — Quaternary Geology classification pennockLandformClass.tif — Pennock Landform Class geomorphons.tif — geomorphon landform classification\nThese were tested in experiments exp401–exp408 and removed in exp409/exp410. AUC cost was minimal (~0.002) and the visual output quality improved substantially.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Covariate Curation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html",
+    "href": "x03-model-implementation.html",
+    "title": "4  Model Implementation",
+    "section": "",
+    "text": "5 Overview\nThis section goes over the development and evaluation of models created to predict peat presence and related peat properties. The modeling workflow had four steps: (1) training data curation for each property being modeled. (2) feature selection using recursive feature elimination. (3) model training and hyperparameter tuning. (4) model evaluation using both random and spatial cross validation. Six types of models were evaluated and coded using Python 3.8 using scikit learn.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#cross-validation",
+    "href": "x03-model-implementation.html#cross-validation",
+    "title": "4  Model Implementation",
+    "section": "5.1 Cross-Validation",
+    "text": "5.1 Cross-Validation\nTwo cross-validation strategies were used in model development and are reported alongside each models results\n\n5.1.1 Random cross-validation\nRandom cross-validation used stratified k-fold splitting (k=5) and randomly assigned observations to folds. This approach is standard in machine learning but it can create bias when training points that are spatially clustered. Because nearby points tend to have similar covariate values, a randomly held out point may be geographically adjacent to a training point which allows the model to interpolate instead of generalize. This can inflate the metrics used to evaluate the effectiveness of models.\n\n\n5.1.2 Spatial block cross-validation\nSpatial block cross-validation was used to replicate ture independant validation. The boundary of the spatial model (state of Minnesota) was split into a 50 xm x 50 km grid. All training points that shared a block were assigned to the same fold, with blocks allocated to folds in a round robin. When a block is held out for validation the model has never seen any training point with that geographic region forcing the model to generalize across the space instead of making an interpretation using local data. This method produces a lower but more reliable performance estimate and is the primary reported metric for models. The performance drop between the random and spatial cross-validation observed across the models reflects spatial autocorrelation in the training data.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#shared-modeling-decisions",
+    "href": "x03-model-implementation.html#shared-modeling-decisions",
+    "title": "4  Model Implementation",
+    "section": "5.2 Shared Modeling Decisions",
+    "text": "5.2 Shared Modeling Decisions\nSeveral decision were consistant across all target properties and model types.\n\n5.2.1 Coordinate reference system\nAll training points and covariates were projected to EPSG:5070 (Albers Equal Area Conic, NAD83) before modeling. Spatial block fold assignment used projected coordinates.\n\n\n5.2.2 Missing Data\nFeatures with missing values at training point locations were imputed with the column median computed from training data only. This primarily impacted distance based features at edge locations and Sentinel-1 backscatter features where coverage was incomplete (~45% of training points).\n\n\n5.2.3 Negative prediction clipping\nDepth regression models (XGBoost, LightGBM, GAM, SVM) can produce negative predictions. This mainly impacted the peat depth model. All negative depth predictions were clipped to zero at inference time.\n***NOTE have not ran other approaches to get non-negative outputs. (ie Tweedie or Gamma loss function)\n\n\n5.2.4 Model Catalog\nAll trained models, their feature sets, parameters, cross-validation metrics, and output file paths are documented in a model catalog (MODEL_CATALOG.csv). Model codes follow the convention {TARGET}{ALGORITHM}{VERSION} (e.g., PROB_RF_001, DEPTH_CNN_002).",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#training-data",
+    "href": "x03-model-implementation.html#training-data",
+    "title": "4  Model Implementation",
+    "section": "7.1 Training Data",
+    "text": "7.1 Training Data\nThe peat probability models were trained on the peat binary presence/absence dataset compiled from the DNR peat inventory, NASIS, and the MBS. The initial compiled dataset contained ~102,000 points. One of the preprocessing decisions made was to exclude observations that contained an organic layer thickness of 0-20cm. These shallow observations often represent ‘duff layers,’ or thin accumulations of organic matter such a leaf litter on the forest floor and often do not indicate the presence of a true histosol. After applying this filter the final training dataset contained 57,134 points of which 32% were peat and 68% as non peat.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#covariate-development-and-categorical-features",
+    "href": "x03-model-implementation.html#covariate-development-and-categorical-features",
+    "title": "4  Model Implementation",
+    "section": "7.2 Covariate Development and Categorical Features",
+    "text": "7.2 Covariate Development and Categorical Features\nThe initial covariate stack contained 77 features including terrain derivatives, satellite imagery, and spatial datasets. Several decision were made during processing that influenced the final feature set.\n\n7.2.1 Exclusion of Peat Refernce Layers\nEarly models (exp201, exp301-303) included peat reference layers as predictive features; histosol rasters, gNATSGO organic component classifications, National Peatland Classification peatland indicators, and NWI wetland layers. These experiments produces inflated AUC values (exp201 AUC=0.994) because the model was learning to reproduce the reference maps instead of independently predicting peat from the landscape covariates. The prevent the model from using circular logic peat reference maps were excluded from the feature set.\n\n\n7.2.2 Categorical one-hot covariates and polygon artifacts\nEarly experiments (exp401-408) included categorical raster layers encoded as one-hot features: quaternary geology classification, Pennock landform class, and geopmorphons. These covariates produced visible polygon shaped artifacts in the output inferences such as hard geometric edges corresponding to vector boundaries. Because these boundaries reflected mapped units rather than a continuous peat forming process the model learned to abruptly change predictions at polygon edges.\nExperiments exp409 and exp410 removed all categorical one-hot features. The AUC cost was minimal (exp407 with categoricals: 0.9740, exp410 without: 0.9722), but the visual quality of the inference was improved substantially. Exp410 was selected as the best RF peat probability model on due to its visual coherence and marginal AUC difference.\n\n\n7.2.3 National Wetlands Inventory Encoding\nThree NWI encoding strategies were evaluated across experiments exp404-408: - 3-class encoding (0=upland, 1-palustrine, 2=lacustrine/riverine): exp403, 406 - Binary encoding (0=non-wetland, 1=any wetland class): exp404, 407 - NWI excluded entirely: exp405, 408\nNWI contributed minimally when tested on the full dataset (exp403-405, AUC ~0.955-0.957). On the 0-20cm dropped dataset (exp406-408, AUC 0.973-0.974) the differences were negligible between strategies. Binary encoding was kept in the final rf model because it preserved meaningful wetland/non-wetland discrimination without creating polygon artifacts.\n\n\n7.2.4 Recursive Feature elimination\nAfter categorical features were dropped, excluding NWI binary, recursive feature elimination was applied to reduce the amount of covariates used in the model. A random forest classifier with 200 trees was trained using 5-fold cross validation at each iteration. The feature with the lowest mean impurity-based importance across folds was dropped at each iteration. The process continued until AUC was reduced by more then 0.5 points from the maximum. This process reduced the final covariate stack from a total of 77 features to 41.\nThe set of 41 retained: -All 12 sentinel-2 spring bands -Selected summer and fall bands -Tasseled Cap componentes across all seasons -Terrain derivatives (DEM, slope, wetness index, flow accumulation, curvature, deviation from mean elevation) -PRISM climate normals NWI binary wetland indicator -Distance features (to water, streams, roads, waterbody edge)\nExp410 was chosen as the final random forest production model. It used 41 features with 500 trees, square root of features considered at each split, and a minimum of 1 sample per leaf.\n\n\n\nMetric\nRandom CV\nSpatial CV\n\n\n\n\nAUC\n0.9722\n0.9567\n\n\nAverage Precision\n0.9193\n0.8861\n\n\nF1 (threshold = 0.327)\n0.8445\n0.8061\n\n\nn\n57,134\n57,134\n\n\n\nThe decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where nearby observations are more similar and random folds overestimate performance.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#point_id-correction",
+    "href": "x03-model-implementation.html#point_id-correction",
+    "title": "4  Model Implementation",
+    "section": "8.1 Point_ID Correction",
+    "text": "8.1 Point_ID Correction\nThe first runs of the gradient boosting models (PROB_XGB_001, PROB_LGBM_001) included ‘point_id’ in the feature set. During spatial inference the point_id feature was assigned a constant fill value (0 or column median) across all pixels, which placed predictions far outside the training distribution for the feature the model had as high performance. This resulted in overconfidence of the model and peat probability predictions were 0.98-1.00 in tiles where the RF model predicted in the 0.20 range.\nCorrected models (PROB_XGB_002, PROB_LGBM_002) were retrained using 76 features with point_id dropped. Cross-validated AUC was essentially the same confirming that point_id had no predictive signal.\n\n\n\nModel\nSpatial CV AUC\nAvg Precision\nF1\nn\n\n\n\n\nXGBoost (PROB_XGB_002)\n0.9615\n0.8892\n0.8105\n57,134\n\n\nLightGBM (PROB_LGBM_002)\n0.9624\n0.8917\n0.8152\n57,134\n\n\n\nRandom cv AUC for LightGBM (PROB_LGBM_001) was 0.9965 which was an overestimate caused by spatial autocorrelation and point_id leakage.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x03-model-implementation.html#model-selection",
+    "href": "x03-model-implementation.html#model-selection",
+    "title": "4  Model Implementation",
+    "section": "13.1 Model Selection",
+    "text": "13.1 Model Selection\nAll probability models were evaluated on spatial block cross-validation AUC as the primary selection criterion, with F1 at optimal threshold and average precision as secondary metrics. The performance of each model is shown below.\n\n\n\nModel\nSpatial AUC\nRandom AUC\nAvg Precision\nF1\n\n\n\n\nRF (PROB_RF_001)\n0.9567\n0.9722\n0.8861\n0.8061\n\n\nXGBoost (PROB_XGB_002)\n0.9615\n—\n0.8892\n0.8105\n\n\nLightGBM (PROB_LGBM_002)\n0.9624\n—\n0.8917\n0.8152\n\n\nGAM (PROB_GAM_001)\n0.9544\n—\n0.8567\n0.7957\n\n\nSVM RBF (PROB_SVM_001)\n0.9525\n—\n0.8528\n0.8010\n\n\nLog. Reg. (PROB_LR_001)\n0.9454\n—\n0.8139\n0.7756\n\n\nCNN 15×15 (PROB_CNN_001)\n0.8914\n—\n0.7690\n0.7313\n\n\nCNN 31×31 (PROB_CNN_003)\n0.9621\n—\n0.9302\n0.8527",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Model Implementation</span>"
+    ]
+  },
+  {
+    "objectID": "x04-results.html",
+    "href": "x04-results.html",
+    "title": "5  Results",
+    "section": "",
+    "text": "This is for model comparisons, model diagnostics (AUCs, confusion matrices, etc)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Results</span>"
+    ]
+  },
+  {
+    "objectID": "x05-discussion.html",
+    "href": "x05-discussion.html",
+    "title": "6  Discussion",
+    "section": "",
+    "text": "bl;ah blah",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Discussion</span>"
+    ]
   }
 ]

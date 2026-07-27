@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="K. O’Connor, N. Jelinski and the Lowland Conifer Team">
-<meta name="dcterms.date" content="2026-06-24">
 
-<title>MN Peatland Carbon Modeling</title>
+<title>2&nbsp; Point data curation – MN Peatland Carbon Modeling</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -38,7 +36,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./x01-point-data-curation.html" rel="next">
+<link href="./x02-covariate-curation.html" rel="next">
+<link href="./index.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -89,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x01-point-data-curation.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -116,13 +115,13 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./x01-point-data-curation.html" class="sidebar-item-text sidebar-link">
+  <a href="./x01-point-data-curation.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span></a>
   </div>
 </li>
@@ -183,10 +182,15 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface"><span class="header-section-number">1</span> Preface</a>
+  <li><a href="#introduction-to-point-data-sources" id="toc-introduction-to-point-data-sources" class="nav-link active" data-scroll-target="#introduction-to-point-data-sources"><span class="header-section-number">2.1</span> Introduction to point data sources</a></li>
+  <li><a href="#data-curation-methods" id="toc-data-curation-methods" class="nav-link" data-scroll-target="#data-curation-methods"><span class="header-section-number">3</span> Data curation methods</a>
   <ul class="collapse">
-  <li><a href="#project-description" id="toc-project-description" class="nav-link" data-scroll-target="#project-description"><span class="header-section-number">1.1</span> Project Description</a></li>
-  <li><a href="#key-personnel" id="toc-key-personnel" class="nav-link" data-scroll-target="#key-personnel"><span class="header-section-number">1.2</span> Key Personnel</a></li>
+  <li><a href="#binary-presenceabsence-dataset" id="toc-binary-presenceabsence-dataset" class="nav-link" data-scroll-target="#binary-presenceabsence-dataset"><span class="header-section-number">3.1</span> Binary Presence/Absence Dataset</a></li>
+  <li><a href="#peat-depth-dataset" id="toc-peat-depth-dataset" class="nav-link" data-scroll-target="#peat-depth-dataset"><span class="header-section-number">3.2</span> Peat depth dataset</a></li>
+  <li><a href="#peat-inventory-data" id="toc-peat-inventory-data" class="nav-link" data-scroll-target="#peat-inventory-data"><span class="header-section-number">3.3</span> Peat Inventory Data</a>
+  <ul class="collapse">
+  <li><a href="#gap-filling" id="toc-gap-filling" class="nav-link" data-scroll-target="#gap-filling"><span class="header-section-number">3.3.1</span> Gap filling</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -196,26 +200,14 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">MN Peatland Carbon Modeling</h1>
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>K. O’Connor, N. Jelinski and the Lowland Conifer Team </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">June 24, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -225,26 +217,41 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-
-<section id="preface" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Preface</h1><p><img src="aksdb-badge-02.png" title="MN Peatland Carbon Modeling" class="quarto-cover-image nolightbox img-fluid"></p>
-<p>This e-book documents the methods and workflow for the peatland carbon modeling component of the MN School Trust Legislative Directive to UMN Department of Forest Resources and UMN Department of Soil, Water and Climate.</p>
-<section id="project-description" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="project-description"><span class="header-section-number">1.1</span> Project Description</h2>
-<p>Describe this peatland carbon modeling project in 1 paragraph</p>
+<section id="introduction-to-point-data-sources" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="introduction-to-point-data-sources"><span class="header-section-number">2.1</span> Introduction to point data sources</h2>
+<p>Peat presence, depth, and decomposition models were trained using soil observation data from three main sources: the Minnesota Peat Inventory, the National Soil Information System (NAISIS), and the Minnesota Biological Survey (MBS).</p>
+<p>The Minnesota Peat Inventory is a dataset collected by the Minnesota DNR during the 1970’s and 80’s. It contains probe measurement peat depths across peatlands in Minnesota as well as laboratory analyzed data including von post decomposition class, bulk density, carbon content, ash content, among other metrics at a horizon level.</p>
+<p>NASIS is the USDA’s Natural Resource Conservation Services data set that populates soil survey. The dataset contains soil profile descriptions of both mineral and organic soils across the country.</p>
+<p>The Minnesota Biological Survey contribues presence and absence observations derived from native plant community classifications where peat associated community types were coded as peat present and upland or non peat communities were coded as peat absent.</p>
+<p>Together these sources provide a spatially distributed dataset across Minnesota.</p>
 </section>
-<section id="key-personnel" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="key-personnel"><span class="header-section-number">1.2</span> Key Personnel</h2>
-<ul>
-<li>Nic Jelinski; Associate Professor, SWAC, Co-PI</li>
-<li>Marcella Windmuller-Campione; Associate Professor, FR, Co-PI</li>
-<li>Kellen O’Connor; Research Professional 2, SWAC</li>
-<li>Laura Reuling; Research Professional?, FR</li>
-<li>Basil Nadolski; Research Professional ?, FR</li>
-</ul>
-<p>More stuff to add.</p>
+<section id="data-curation-methods" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Data curation methods</h1>
+<p>The final point datasets used to train each model were created by combining the data sources any applying filters specific to each variable.</p>
+<section id="binary-presenceabsence-dataset" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="binary-presenceabsence-dataset"><span class="header-section-number">3.1</span> Binary Presence/Absence Dataset</h2>
+<p>FINAL_binary_mn.csv (~60,000 points) This point dataset is used for binary classification models. It combines ALL points from the Minnesota peat inventory, NASIS and the MBS. A new field was created in this set called peat_binary. Points that have a depth that is greater than 0cm get a value of 1, and points that contain a depth value of 0cm are assigned a 0. peat_binary 1 (peat present) or 0 (peat absent).</p>
+<p>A secondary version (FINAL_binary_mn_0_20_dropped.csv) excludes points where peat depth was measured between 1–20 cm. There are soils described in MN that have “duff” layers that can be classified as an O horizon but do not necessarily indicate a presence of true peat. (57,000)</p>
+</section>
+<section id="peat-depth-dataset" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="peat-depth-dataset"><span class="header-section-number">3.2</span> Peat depth dataset</h2>
+<p>depb_points_mn.csv (45,878 points) A dataset of locations with confirmed peat depth measurements (depb in cm). Unlike the binary dataset, every point here has a measured depth value. This dataset is used for depth prediction models. Only non peat values with a MEASURED value of 0cm were added to this set (NASIS mineral points, mn peat inventory)</p>
+</section>
+<section id="peat-inventory-data" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="peat-inventory-data"><span class="header-section-number">3.3</span> Peat Inventory Data</h2>
+<p>The Minnesota Peat Inventory contains lab data that was used for the carbon and organic decomposition models. First, all tables were merged into a horizon-level master table on site ID so that ash, carbon, bulk density, and classification were on the same table. The table had 35,142 horizons from 7,032 unique pedons. Missing top or bottom depths in horizons were filled using adjacent horizons when possible. Horizons that could not be corrected this way were flagged and either extended to the next horizon or a max depth of 200cm. SOC and Db were then gap filled using one of three methods based on existing data.</p>
+<section id="gap-filling" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="gap-filling"><span class="header-section-number">3.3.1</span> Gap filling</h3>
+<ol type="1">
+<li>Measured lab data: used when available (SOC: 533 horizons, BD: 3,209 horizons).</li>
+<li>Ash regression: with horizons that were missing SOC or BD but had ash content, a linear regression (SOC~Ash and BD~Ash) was fit and used to predict the missing value (SOC~Ash R²=0.623; BD~Ash R²=0.579).</li>
+<li>Random Forest: a random forest model was trained on von Post decomposition class, top/mid horizon depth, and horizon classification (Fibric, Hemic, Sapric). This performed poorly (SOC CV R²=‑0.051).</li>
+<li>Still missing: horizons with no von Post score either were left unfilled and excluded from carbon stock calculation</li>
+</ol>
+<p>Because the rf fill performed poorly this was determined to be a property of the data as the SOC in peat stays relativly constant (mean 50.67% and a std of 4.77%). So there is little variance for the rf features to explain. Db was found to be more variable than SOC and a class mean fill for Db would have more uncertainty than SOC. After gap filling was complete the filled values were flagged by the method used to track data quality: Tier 1: no RF-filled values used (measured or ash-regression only, 503 pedons, 13.1%) Tier 2: some RF-filled values (under 50% of horizons, 202 pedons, 5.3%) Tier 3: majority RF-filled (over 50% of horizons, 3,123 pedons, 81.6%)</p>
 
 
+</section>
 </section>
 </section>
 
@@ -651,10 +658,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link" aria-label="Preface">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./x01-point-data-curation.html" class="pagination-link" aria-label="Point data curation">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./x02-covariate-curation.html" class="pagination-link" aria-label="Covariate Curation">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

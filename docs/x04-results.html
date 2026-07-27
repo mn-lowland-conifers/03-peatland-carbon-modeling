@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="K. O’Connor, N. Jelinski and the Lowland Conifer Team">
-<meta name="dcterms.date" content="2026-06-24">
 
-<title>MN Peatland Carbon Modeling</title>
+<title>5&nbsp; Results – MN Peatland Carbon Modeling</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -38,7 +36,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./x01-point-data-curation.html" rel="next">
+<link href="./x05-discussion.html" rel="next">
+<link href="./x03-model-implementation.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -89,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x04-results.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Results</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -116,7 +115,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
@@ -140,7 +139,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./x04-results.html" class="sidebar-item-text sidebar-link">
+  <a href="./x04-results.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Results</span></span></a>
   </div>
 </li>
@@ -178,44 +177,22 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface"><span class="header-section-number">1</span> Preface</a>
-  <ul class="collapse">
-  <li><a href="#project-description" id="toc-project-description" class="nav-link" data-scroll-target="#project-description"><span class="header-section-number">1.1</span> Project Description</a></li>
-  <li><a href="#key-personnel" id="toc-key-personnel" class="nav-link" data-scroll-target="#key-personnel"><span class="header-section-number">1.2</span> Key Personnel</a></li>
-  </ul></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">MN Peatland Carbon Modeling</h1>
+<h1 class="title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Results</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>K. O’Connor, N. Jelinski and the Lowland Conifer Team </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">June 24, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -225,28 +202,9 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-
-<section id="preface" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Preface</h1><p><img src="aksdb-badge-02.png" title="MN Peatland Carbon Modeling" class="quarto-cover-image nolightbox img-fluid"></p>
-<p>This e-book documents the methods and workflow for the peatland carbon modeling component of the MN School Trust Legislative Directive to UMN Department of Forest Resources and UMN Department of Soil, Water and Climate.</p>
-<section id="project-description" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="project-description"><span class="header-section-number">1.1</span> Project Description</h2>
-<p>Describe this peatland carbon modeling project in 1 paragraph</p>
-</section>
-<section id="key-personnel" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="key-personnel"><span class="header-section-number">1.2</span> Key Personnel</h2>
-<ul>
-<li>Nic Jelinski; Associate Professor, SWAC, Co-PI</li>
-<li>Marcella Windmuller-Campione; Associate Professor, FR, Co-PI</li>
-<li>Kellen O’Connor; Research Professional 2, SWAC</li>
-<li>Laura Reuling; Research Professional?, FR</li>
-<li>Basil Nadolski; Research Professional ?, FR</li>
-</ul>
-<p>More stuff to add.</p>
+<p>This is for model comparisons, model diagnostics (AUCs, confusion matrices, etc)</p>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -651,10 +609,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./x03-model-implementation.html" class="pagination-link" aria-label="Model Implementation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./x01-point-data-curation.html" class="pagination-link" aria-label="Point data curation">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./x05-discussion.html" class="pagination-link" aria-label="Discussion">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Discussion</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

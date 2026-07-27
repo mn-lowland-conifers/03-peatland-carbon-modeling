@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="K. O’Connor, N. Jelinski and the Lowland Conifer Team">
-<meta name="dcterms.date" content="2026-06-24">
 
-<title>MN Peatland Carbon Modeling</title>
+<title>3&nbsp; Covariate Curation – MN Peatland Carbon Modeling</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -38,7 +36,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./x01-point-data-curation.html" rel="next">
+<link href="./x03-model-implementation.html" rel="next">
+<link href="./x01-point-data-curation.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -89,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x02-covariate-curation.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -116,7 +115,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
@@ -128,7 +127,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./x02-covariate-curation.html" class="sidebar-item-text sidebar-link">
+  <a href="./x02-covariate-curation.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></span></a>
   </div>
 </li>
@@ -183,11 +182,21 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface"><span class="header-section-number">1</span> Preface</a>
+  <li><a href="#computing-environment" id="toc-computing-environment" class="nav-link active" data-scroll-target="#computing-environment"><span class="header-section-number">3.1</span> Computing Environment</a>
   <ul class="collapse">
-  <li><a href="#project-description" id="toc-project-description" class="nav-link" data-scroll-target="#project-description"><span class="header-section-number">1.1</span> Project Description</a></li>
-  <li><a href="#key-personnel" id="toc-key-personnel" class="nav-link" data-scroll-target="#key-personnel"><span class="header-section-number">1.2</span> Key Personnel</a></li>
+  <li><a href="#terrain-derivatives-whiteboxtools" id="toc-terrain-derivatives-whiteboxtools" class="nav-link" data-scroll-target="#terrain-derivatives-whiteboxtools"><span class="header-section-number">3.1.1</span> Terrain Derivatives (WhiteboxTools)</a></li>
   </ul></li>
+  <li><a href="#sentinel-2-imagery" id="toc-sentinel-2-imagery" class="nav-link" data-scroll-target="#sentinel-2-imagery"><span class="header-section-number">3.2</span> Sentinel-2 Imagery</a>
+  <ul class="collapse">
+  <li><a href="#sentinel-2-export-and-mosaicking" id="toc-sentinel-2-export-and-mosaicking" class="nav-link" data-scroll-target="#sentinel-2-export-and-mosaicking"><span class="header-section-number">3.2.1</span> Sentinel 2 export and mosaicking</a></li>
+  <li><a href="#tasseled-cap" id="toc-tasseled-cap" class="nav-link" data-scroll-target="#tasseled-cap"><span class="header-section-number">3.2.2</span> Tasseled Cap</a></li>
+  <li><a href="#sentinel-1" id="toc-sentinel-1" class="nav-link" data-scroll-target="#sentinel-1"><span class="header-section-number">3.2.3</span> Sentinel-1</a></li>
+  </ul></li>
+  <li><a href="#prism-climate-data" id="toc-prism-climate-data" class="nav-link" data-scroll-target="#prism-climate-data"><span class="header-section-number">3.3</span> PRISM Climate data</a></li>
+  <li><a href="#national-wetlands-inventory-nwi" id="toc-national-wetlands-inventory-nwi" class="nav-link" data-scroll-target="#national-wetlands-inventory-nwi"><span class="header-section-number">3.4</span> National Wetlands Inventory (NWI)</a></li>
+  <li><a href="#distance-features" id="toc-distance-features" class="nav-link" data-scroll-target="#distance-features"><span class="header-section-number">3.5</span> Distance Features</a></li>
+  <li><a href="#gnatsgo-organic-soils" id="toc-gnatsgo-organic-soils" class="nav-link" data-scroll-target="#gnatsgo-organic-soils"><span class="header-section-number">3.6</span> gNATSGO Organic Soils</a></li>
+  <li><a href="#categorical-layers" id="toc-categorical-layers" class="nav-link" data-scroll-target="#categorical-layers"><span class="header-section-number">3.7</span> Categorical Layers</a></li>
   </ul>
 </nav>
     </div>
@@ -196,26 +205,14 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">MN Peatland Carbon Modeling</h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Covariate Curation</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>K. O’Connor, N. Jelinski and the Lowland Conifer Team </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">June 24, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -225,27 +222,62 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-
-<section id="preface" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Preface</h1><p><img src="aksdb-badge-02.png" title="MN Peatland Carbon Modeling" class="quarto-cover-image nolightbox img-fluid"></p>
-<p>This e-book documents the methods and workflow for the peatland carbon modeling component of the MN School Trust Legislative Directive to UMN Department of Forest Resources and UMN Department of Soil, Water and Climate.</p>
-<section id="project-description" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="project-description"><span class="header-section-number">1.1</span> Project Description</h2>
-<p>Describe this peatland carbon modeling project in 1 paragraph</p>
+<section id="computing-environment" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="computing-environment"><span class="header-section-number">3.1</span> Computing Environment</h2>
+<p>Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL (ABI mismatches, missing libpoppler, libtiff version conflicts). ## Reference Grid All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data. Reference raster: gNATSGO 10m MUKEY raster Dimensions: 66,474 × 75,185 pixels CRS: EPSG:5070 (NAD83 / Conus Albers Equal Area) Origin: −99,098, 3,021,389 Resolution: 10m ### Digital Elevation Model Source: USGS 3D Elevation Program (3DEP), 10m resolution Download: National Map Downloader, https://apps.nationalmap.gov/downloader/ Tiles mosaicked into a single statewide raster and clipped to the Minnesota state boundary using GDAL warp with output CRS forced to EPSG:5070 minnesota_dem_10m.tif</p>
+<section id="terrain-derivatives-whiteboxtools" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="terrain-derivatives-whiteboxtools"><span class="header-section-number">3.1.1</span> Terrain Derivatives (WhiteboxTools)</h3>
+<p>WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process. ### Processing Strategy Two approaches were used depending if the derivative is affected by watershed context: Statewide: Computed directly on the statewide mosaicked DEM. These derivatives only require local information and do not depend on upstream drainage areas. slope, aspect, hillshade planCurvature, profileCurvature, meanCurvature, maximalCurvature geomorphons, pennockLandformClass devfrommeanelev (4m, 8m, 16m), diffFromMeanElev relativeTopographicPosition (4m, 8m, 16m) By HUC8 watershed: For derivatives that are impacted by flow patterns, a different approach was used. Minnesota was divided into 127 HUC8 watersheds and a 5km buffer was applied around each HUC8. This was done to prevent potential edge effects from occurring. Derivatives were computed on each buffered watershed tile independently with individual SLURM jobs (one per HUC8), then mosaicked back together with the overlapping buffer zones removed. breached_dem (hydrologically conditioned DEM) d8FlowAccumulation, dInfFlowAccumulation wetnessIndex (TWI) ### Hydrological Modification Minnesota peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching approach was used to carve channels through barriers blocking drainage versus raising the surface itself. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values. Modification workflow by HUC8 watershed: Step Tool Output Purpose 1 FillSingleCellPits _01_fscp.tif Remove single-cell LiDAR artifacts 2 FlattenLakes _02_flat.tif Flatten lake surfaces to minimum elevation 3 TopologicalBreachBurn _03_tbb.tif Burn stream network into DEM 4 BreachDepressionsLeastCost _04_bdlc.tif Breach through road embankments and barriers 5 FillSingleCellPits _05_fel.tif Final cleanup</p>
+<p>Parameters: TopologicalBreachBurn snap = 2.0m (2-cell tolerance at 1m resolution for stream/DEM alignment) BreachDepressionsLeastCost dist = 100 cells (100m max breach length), max_cost = 1.0m Input datasets: Lakes: DNR HydroFeatures (polygons) Streams: DNR RiversStreams (lines) Roads: MnDOT Roadway Routes (lines) Final terrain derivatives: slope.tif, aspect.tif, hillshade.tif, planCurvature.tif, profileCurvature.tif, maximalCurvature.tif, breached_dem.tif, d8FlowAccumulation.tif, dInfFlowAccumulation.tif, wetnessIndex.tif, devfrommeanelev_4m.tif, devfrommeanelev_8m.tif, devfrommeanelev_16m.tif, diffFromMeanElev.tif, relativeTopographicPosition_4m.tif, relativeTopographicPosition_8m.tif, relativeTopographicPosition_16m.tif, geomorphons.tif, pennockLandformClass.tif</p>
 </section>
-<section id="key-personnel" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="key-personnel"><span class="header-section-number">1.2</span> Key Personnel</h2>
-<ul>
-<li>Nic Jelinski; Associate Professor, SWAC, Co-PI</li>
-<li>Marcella Windmuller-Campione; Associate Professor, FR, Co-PI</li>
-<li>Kellen O’Connor; Research Professional 2, SWAC</li>
-<li>Laura Reuling; Research Professional?, FR</li>
-<li>Basil Nadolski; Research Professional ?, FR</li>
-</ul>
-<p>More stuff to add.</p>
-
-
 </section>
+<section id="sentinel-2-imagery" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="sentinel-2-imagery"><span class="header-section-number">3.2</span> Sentinel-2 Imagery</h2>
+<p>Source: COPERNICUS/S2_SR_HARMONIZED from Google Earth Engine Dates: 2019–2024 Extent: Minnesota state boundary (TIGER/2018/States) Seasonal Compositing Three seasonal median composites were generated: Spring (April–May): cloud and snow masked Summer (June–August): cloud masked Fall (September–October): cloud and snow masked Cloud masking used SCL layer excluding: cloud shadows (class 3), medium cloud (class 8), high cloud (class 9), thin cirrus (class 10). Per-image pre-filter excluded scenes &gt;30% cloud cover. Snow/ice (class 11) masked for spring and fall.</p>
+<p>In total there were 10 bands per season: B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12 and 2 additional bands were calculated: NDVI = (B08 − B04) / (B08 + B04) Normalized Difference Vegetation Index to quantify vegetation health and density SWDI = from Green (B03) and Red Edge 1 (B05) Soil Water Deficit Index sensitive to surface moisture Bands that were originally at a 20m resolution (B05–B08A, B11, B12) were resampled to 10m during the GEE export.</p>
+<section id="sentinel-2-export-and-mosaicking" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="sentinel-2-export-and-mosaicking"><span class="header-section-number">3.2.1</span> Sentinel 2 export and mosaicking</h3>
+<p>GEE automatically tiled the whole state exports. Tiles were downloaded from google drive to local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.</p>
+</section>
+<section id="tasseled-cap" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="tasseled-cap"><span class="header-section-number">3.2.2</span> Tasseled Cap</h3>
+<p>Tasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), greenness(TCG), and wetness(TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs.&nbsp;spring/fall)</p>
+</section>
+<section id="sentinel-1" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="sentinel-1"><span class="header-section-number">3.2.3</span> Sentinel-1</h3>
+<p><strong>Still in the works</strong>* Original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, while limited, S1 survived RFE and increased R2 values Changes in the export (combining ascending and descending runs, extending date range) will hopefully fill the missing data: Three bands per composite: VV (dB), VH (dB), VV/VH ratio. Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.</p>
+</section>
+</section>
+<section id="prism-climate-data" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="prism-climate-data"><span class="header-section-number">3.3</span> PRISM Climate data</h2>
+<p>Source: PRISM Climate Group, 30-year normals at 800m Layers: Annual precipitation, mean July max temp, mean annual temp, mean January min temp</p>
+<p>PRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resampled to 10m (bilinear) during alignment to the reference grid.</p>
+</section>
+<section id="national-wetlands-inventory-nwi" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="national-wetlands-inventory-nwi"><span class="header-section-number">3.4</span> National Wetlands Inventory (NWI)</h2>
+<p>Source: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)</p>
+<p>The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio with chunked processing to manage the large amount of features (1,000,000+) Polygons were classified by their cowardin code and separated into 3 distinct groupings: 0 = Non-wetland (background) 1 = Wetland 2 = Lowland conifer (PFO4, PSS4, PFO2, PSS2, mixed codes containing “/4”)</p>
+<p>The encoding variants of the raster was evaluated during initial random forest experiments and the 3-class classification was found to give no measurable improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland</p>
+</section>
+<section id="distance-features" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="distance-features"><span class="header-section-number">3.5</span> Distance Features</h2>
+<p>Source: Minnesota statewide vector datasets Roads: MnDOT Roadway Routes Streams/rivers: DNR RiversStreams Water bodies: DNR HydroFeatures</p>
+<p>Euclidean distance rasters were computed from vector layers using GDAL proximity on MSI.</p>
+</section>
+<section id="gnatsgo-organic-soils" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="gnatsgo-organic-soils"><span class="header-section-number">3.6</span> gNATSGO Organic Soils</h2>
+<p>Source: gNATSGO for Minnesota</p>
+<p>gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service’s soils product. It merges SSURGO withs STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy: 0: Non-organic 1: Shallow Peat (histic epipedon, non-Histosol, 20–40cm organic) 2: Terric Saprists 3: Terric Hemists 4: Terric Fibrists 5: Typic Saprists 6: Typic Hemists 7: Typic Fibrists 8: Sphagno Histosols</p>
+<p>A binary variant of this raster was also created that flags any mukey containing an organic component regardless of dominance.</p>
+<p>Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as refernce/validation layers and used selectively in other peat property models.</p>
+</section>
+<section id="categorical-layers" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="categorical-layers"><span class="header-section-number">3.7</span> Categorical Layers</h2>
+<p>These layers produced visible polygon shaped artifacts such as hard geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges from these rasters rather than responding to environmental gradients they were excluded.</p>
+<p>10m_quaternary_geology.tif — Quaternary Geology classification pennockLandformClass.tif — Pennock Landform Class geomorphons.tif — geomorphon landform classification</p>
+<p>These were tested in experiments exp401–exp408 and removed in exp409/exp410. AUC cost was minimal (~0.002) and the visual output quality improved substantially.</p>
+
+
 </section>
 
 </main> <!-- /main -->
@@ -651,10 +683,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./x01-point-data-curation.html" class="pagination-link" aria-label="Point data curation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./x01-point-data-curation.html" class="pagination-link" aria-label="Point data curation">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./x03-model-implementation.html" class="pagination-link" aria-label="Model Implementation">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
