@@ -43,6 +43,8 @@ A dataset of locations with confirmed peat depth measurements (depb in cm). Unli
 every point here has a measured depth value. This dataset is used for depth prediction models. Only non
 peat values with a MEASURED value of 0cm were added to this set (NASIS mineral points, mn peat inventory) 
 
+![Map of Training Points.](images/training_data_map.png)
+
 ### Peat Inventory Data
 The Minnesota Peat Inventory contains lab data that was used for the carbon and organic decomposition models. First, all tables were merged into a horizon-level master table on site ID so that ash, carbon, bulk density, and classification were on the same table. The table had 35,142 horizons from 7,032 unique pedons.
 Missing top or bottom depths in horizons were filled using adjacent horizons when possible. Horizons that could not be corrected this way were flagged and either extended to the next horizon or a max depth of 200cm.
