@@ -17,7 +17,6 @@ book:
     - x03-model-implementation.md
     - x04-results.md
     - x05-discussion.md
-    - new-thing.md
   appendices:
     - references.md
 

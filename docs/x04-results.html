@@ -122,7 +122,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./x01-point-data-curation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point data curation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Point Data Curation</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -149,12 +149,6 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Discussion</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./new-thing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">New thing I added</span></span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
@@ -177,8 +171,34 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#peat-probability" id="toc-peat-probability" class="nav-link active" data-scroll-target="#peat-probability"><span class="header-section-number">5.1</span> Peat Probability</a>
+  <ul class="collapse">
+  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest"><span class="header-section-number">5.1.1</span> Random Forest</a></li>
+  <li><a href="#gradient-boosting-xgboost-and-lightgbm" id="toc-gradient-boosting-xgboost-and-lightgbm" class="nav-link" data-scroll-target="#gradient-boosting-xgboost-and-lightgbm"><span class="header-section-number">5.1.2</span> Gradient Boosting (XGBoost and LightGBM)</a></li>
+  <li><a href="#generalized-additive-model-gam" id="toc-generalized-additive-model-gam" class="nav-link" data-scroll-target="#generalized-additive-model-gam"><span class="header-section-number">5.1.3</span> Generalized Additive Model (GAM)</a></li>
+  <li><a href="#support-vector-machine" id="toc-support-vector-machine" class="nav-link" data-scroll-target="#support-vector-machine"><span class="header-section-number">5.1.4</span> Support Vector Machine</a></li>
+  <li><a href="#logistic-regression-prob_lr_001" id="toc-logistic-regression-prob_lr_001" class="nav-link" data-scroll-target="#logistic-regression-prob_lr_001"><span class="header-section-number">5.1.5</span> Logistic Regression (PROB_LR_001)</a></li>
+  <li><a href="#convolutional-neural-network-cnn" id="toc-convolutional-neural-network-cnn" class="nav-link" data-scroll-target="#convolutional-neural-network-cnn"><span class="header-section-number">5.1.6</span> Convolutional Neural Network (CNN)</a></li>
+  <li><a href="#probability-threshold-optimization" id="toc-probability-threshold-optimization" class="nav-link" data-scroll-target="#probability-threshold-optimization"><span class="header-section-number">5.1.7</span> Probability Threshold Optimization</a></li>
+  </ul></li>
+  <li><a href="#peat-depth" id="toc-peat-depth" class="nav-link" data-scroll-target="#peat-depth"><span class="header-section-number">5.2</span> Peat Depth</a>
+  <ul class="collapse">
+  <li><a href="#random-forest-depth-models" id="toc-random-forest-depth-models" class="nav-link" data-scroll-target="#random-forest-depth-models"><span class="header-section-number">5.2.1</span> Random Forest Depth models</a></li>
+  <li><a href="#other-depth-models" id="toc-other-depth-models" class="nav-link" data-scroll-target="#other-depth-models"><span class="header-section-number">5.2.2</span> Other Depth Models</a></li>
+  </ul></li>
+  <li><a href="#organic-decomposition" id="toc-organic-decomposition" class="nav-link" data-scroll-target="#organic-decomposition"><span class="header-section-number">5.3</span> Organic decomposition</a>
+  <ul class="collapse">
+  <li><a href="#random-forest-1" id="toc-random-forest-1" class="nav-link" data-scroll-target="#random-forest-1"><span class="header-section-number">5.3.1</span> Random Forest</a></li>
+  </ul></li>
+  <li><a href="#below-ground-carbon" id="toc-below-ground-carbon" class="nav-link" data-scroll-target="#below-ground-carbon"><span class="header-section-number">5.4</span> Below ground Carbon</a></li>
+  <li><a href="#above-ground-carbon" id="toc-above-ground-carbon" class="nav-link" data-scroll-target="#above-ground-carbon"><span class="header-section-number">5.5</span> Above ground Carbon</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -202,9 +222,796 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This is for model comparisons, model diagnostics (AUCs, confusion matrices, etc)</p>
+<section id="peat-probability" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="peat-probability"><span class="header-section-number">5.1</span> Peat Probability</h2>
+<section id="random-forest" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="random-forest"><span class="header-section-number">5.1.1</span> Random Forest</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Random CV</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9722</td>
+<td>0.9567</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.9193</td>
+<td>0.8861</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.327)</td>
+<td>0.8445</td>
+<td>0.8061</td>
+</tr>
+<tr class="even">
+<td>n</td>
+<td>57,134</td>
+<td>57,134</td>
+</tr>
+</tbody>
+</table>
+<p>The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where observations that are closer to one another are more similar to each other and that random folds are overestimating performance.</p>
+<p>Model experiments testing the benefit of including categorical features resulted in AUC values of 0.9740 (exp407, with categorical) versus 0.9722 (exp410, without categorical) which was determined to be a minimal decrease in performance relative to the visual improvement of the spatial inferences.</p>
+<p>The NWI encoding experiments produced AUC 0.956 on the full dataset (exp403-405) and AUC 0.973 on the 0-20cm dropped dataset (exp406-408).</p>
+</section>
+<section id="gradient-boosting-xgboost-and-lightgbm" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="gradient-boosting-xgboost-and-lightgbm"><span class="header-section-number">5.1.2</span> Gradient Boosting (XGBoost and LightGBM)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Spatial CV AUC</th>
+<th>Avg Precision</th>
+<th>F1</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>XGBoost (PROB_XGB_002)</td>
+<td>0.9615</td>
+<td>0.8892</td>
+<td>0.8105</td>
+<td>57,134</td>
+</tr>
+<tr class="even">
+<td>LightGBM (PROB_LGBM_002)</td>
+<td>0.9624</td>
+<td>0.8917</td>
+<td>0.8152</td>
+<td>57,134</td>
+</tr>
+</tbody>
+</table>
+<p>Random cv AUC for the initial run of the LightGBM model (PROB_LGBM_001) was 0.9965 which was an overestimate caused by inclusion of the point_id column in the training data.</p>
+</section>
+<section id="generalized-additive-model-gam" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="generalized-additive-model-gam"><span class="header-section-number">5.1.3</span> Generalized Additive Model (GAM)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9544</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8567</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.754)</td>
+<td>0.7957</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="support-vector-machine" class="level3" data-number="5.1.4">
+<h3 data-number="5.1.4" class="anchored" data-anchor-id="support-vector-machine"><span class="header-section-number">5.1.4</span> Support Vector Machine</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9525</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8528</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.764)</td>
+<td>0.8010</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="logistic-regression-prob_lr_001" class="level3" data-number="5.1.5">
+<h3 data-number="5.1.5" class="anchored" data-anchor-id="logistic-regression-prob_lr_001"><span class="header-section-number">5.1.5</span> Logistic Regression (PROB_LR_001)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Spatial CV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AUC</td>
+<td>0.9454</td>
+</tr>
+<tr class="even">
+<td>Average Precision</td>
+<td>0.8139</td>
+</tr>
+<tr class="odd">
+<td>F1 (threshold = 0.754)</td>
+<td>0.7756</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="convolutional-neural-network-cnn" class="level3" data-number="5.1.6">
+<h3 data-number="5.1.6" class="anchored" data-anchor-id="convolutional-neural-network-cnn"><span class="header-section-number">5.1.6</span> Convolutional Neural Network (CNN)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Spatial CV AUC</th>
+<th>Spatial CV F1</th>
+<th>Opt. Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CNN 15x15 (PROB_CNN_001)</td>
+<td>0.8914</td>
+<td>0.567</td>
+<td>0.8291</td>
+</tr>
+<tr class="even">
+<td>CNN 31x31 v2 (PROB_CNN_002)</td>
+<td>0.9375</td>
+<td>0.7234</td>
+<td>0.7638</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="probability-threshold-optimization" class="level3" data-number="5.1.7">
+<h3 data-number="5.1.7" class="anchored" data-anchor-id="probability-threshold-optimization"><span class="header-section-number">5.1.7</span> Probability Threshold Optimization</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 17%">
+<col style="width: 16%">
+<col style="width: 23%">
+<col style="width: 17%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>F1 Threshold</th>
+<th>Youden’s J</th>
+<th>F1 at Threshold</th>
+<th>Sensitivity</th>
+<th>Precision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RF</td>
+<td>0.327</td>
+<td>0.186</td>
+<td>0.845</td>
+<td>0.850</td>
+<td>0.839</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>0.598</td>
+<td>0.342</td>
+<td>0.816</td>
+<td>0.828</td>
+<td>0.804</td>
+</tr>
+<tr class="odd">
+<td>LightGBM</td>
+<td>0.699</td>
+<td>0.327</td>
+<td>0.816</td>
+<td>0.787</td>
+<td>0.847</td>
+</tr>
+<tr class="even">
+<td>GAM</td>
+<td>0.754</td>
+<td>0.578</td>
+<td>0.796</td>
+<td>0.812</td>
+<td>0.780</td>
+</tr>
+<tr class="odd">
+<td>SVM RBF</td>
+<td>0.764</td>
+<td>0.493</td>
+<td>0.801</td>
+<td>0.815</td>
+<td>0.788</td>
+</tr>
+<tr class="even">
+<td>Log. Reg.</td>
+<td>0.754</td>
+<td>0.578</td>
+<td>0.776</td>
+<td>0.788</td>
+<td>0.764</td>
+</tr>
+<tr class="odd">
+<td>CNN 15×15</td>
+<td>0.829</td>
+<td>0.774</td>
+<td>0.731</td>
+<td>0.752</td>
+<td>0.712</td>
+</tr>
+<tr class="even">
+<td>CNN 31×31 v2</td>
+<td>0.764</td>
+<td>0.694</td>
+<td>0.808</td>
+<td>0.786</td>
+<td>0.832</td>
+</tr>
+<tr class="odd">
+<td>CNN 31×31 v3</td>
+<td>0.764</td>
+<td>0.694</td>
+<td>0.853</td>
+<td>0.853</td>
+<td>0.853</td>
+</tr>
+</tbody>
+</table>
+<p>The differences between the F1-optimal and Youden’s J thresholds between the models shows their differences in probability distributions. For example the GAM, SVM, and CNN require higher decision thresholds to get balanced precision and recall because their predicted probabilities are compressed.</p>
+<p><strong>Add calibration curves and Brier scores</strong> ### Probability Model Selection</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 34%">
+<col style="width: 12%">
+<col style="width: 10%">
+<col style="width: 22%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>CV</th>
+<th>AUC</th>
+<th>Avg Precision</th>
+<th>F1</th>
+<th>Brier</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RF</td>
+<td>Random</td>
+<td>0.9722</td>
+<td>0.9193</td>
+<td>0.8445</td>
+<td>0.0428</td>
+</tr>
+<tr class="even">
+<td>RF</td>
+<td>Spatial</td>
+<td>0.9567</td>
+<td>0.8861</td>
+<td>0.8063</td>
+<td>0.0520</td>
+</tr>
+<tr class="odd">
+<td>RF + S1 RFE</td>
+<td>Spatial</td>
+<td>0.9583</td>
+<td>0.8881</td>
+<td>0.8085</td>
+<td>0.0516</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>Spatial</td>
+<td>0.9615</td>
+<td>0.8892</td>
+<td>0.8105</td>
+<td>0.0556</td>
+</tr>
+<tr class="odd">
+<td>XGBoost + S1</td>
+<td>Spatial</td>
+<td>0.9628</td>
+<td>0.8909</td>
+<td>0.8130</td>
+<td>0.0549</td>
+</tr>
+<tr class="even">
+<td>XGBoost + S1 full</td>
+<td>Spatial</td>
+<td>0.9634</td>
+<td>0.8917</td>
+<td>0.8139</td>
+<td>0.0544</td>
+</tr>
+<tr class="odd">
+<td>LightGBM</td>
+<td>Spatial</td>
+<td>0.9624</td>
+<td>0.8917</td>
+<td>0.8152</td>
+<td>0.0542</td>
+</tr>
+<tr class="even">
+<td>LightGBM + S1</td>
+<td>Spatial</td>
+<td>0.9631</td>
+<td>0.8939</td>
+<td>0.8130</td>
+<td>0.0524</td>
+</tr>
+<tr class="odd">
+<td>LightGBM + S1 full</td>
+<td>Spatial</td>
+<td>0.9641</td>
+<td>0.8975</td>
+<td>0.8172</td>
+<td>0.0514</td>
+</tr>
+<tr class="even">
+<td>GAM</td>
+<td>Spatial</td>
+<td>0.9544</td>
+<td>0.8567</td>
+<td>0.7958</td>
+<td>0.0819</td>
+</tr>
+<tr class="odd">
+<td>SVM RBF</td>
+<td>Spatial</td>
+<td>0.9525</td>
+<td>0.8528</td>
+<td>0.8010</td>
+<td>0.0753</td>
+</tr>
+<tr class="even">
+<td>Logistic Regression</td>
+<td>Spatial</td>
+<td>0.9454</td>
+<td>0.8139</td>
+<td>0.7757</td>
+<td>0.0918</td>
+</tr>
+<tr class="odd">
+<td>CNN 15×15</td>
+<td>Spatial</td>
+<td>0.8914</td>
+<td>0.7690</td>
+<td>0.7313</td>
+<td>0.2243</td>
+</tr>
+<tr class="even">
+<td>CNN 31×31</td>
+<td>Spatial</td>
+<td>0.9375</td>
+<td>0.8905</td>
+<td>0.8084</td>
+<td>0.1107</td>
+</tr>
+<tr class="odd">
+<td>CNN 31×31 v2</td>
+<td>Spatial</td>
+<td>0.9621</td>
+<td>0.9302</td>
+<td>0.8527</td>
+<td>0.0786</td>
+</tr>
+<tr class="even">
+<td>CNN 31×31 focal loss</td>
+<td>Spatial</td>
+<td>0.9620</td>
+<td>0.9303</td>
+<td>0.8527</td>
+<td>0.0806</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note that not all of the models have S1 included as a covariate</strong></p>
+</section>
+</section>
+<section id="peat-depth" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="peat-depth"><span class="header-section-number">5.2</span> Peat Depth</h2>
+<section id="random-forest-depth-models" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="random-forest-depth-models"><span class="header-section-number">5.2.1</span> Random Forest Depth models</h3>
+<section id="random-forest-two-stage-random-cv" class="level4" data-number="5.2.1.1">
+<h4 data-number="5.2.1.1" class="anchored" data-anchor-id="random-forest-two-stage-random-cv"><span class="header-section-number">5.2.1.1</span> Random Forest Two-stage (Random CV)</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 46%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Experiment</th>
+<th>Approach</th>
+<th>R^2</th>
+<th>RMSE</th>
+<th>MAE</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>exp301</td>
+<td>Two-stage baseline (peat-only)</td>
+<td>0.41</td>
+<td>93cm</td>
+<td>69cm</td>
+<td>6,829</td>
+</tr>
+<tr class="even">
+<td>exp411</td>
+<td>Two-stage, no SSURGO</td>
+<td>0.413</td>
+<td>95.18cm</td>
+<td>70.98cm</td>
+<td>–</td>
+</tr>
+<tr class="odd">
+<td>exp412</td>
+<td>Two-stage + SSURGO</td>
+<td>0.466</td>
+<td>90.81cm</td>
+<td>66.43cm</td>
+<td>–</td>
+</tr>
+<tr class="even">
+<td>exp413</td>
+<td>Log-transformed depth</td>
+<td>0.425</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="odd">
+<td>exp415</td>
+<td>0-20cm dropped</td>
+<td>0.450</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="rfe-selected-feature-models-random-cv" class="level4" data-number="5.2.1.2">
+<h4 data-number="5.2.1.2" class="anchored" data-anchor-id="rfe-selected-feature-models-random-cv"><span class="header-section-number">5.2.1.2</span> RFE-Selected Feature Models (Random CV)</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Experiment</th>
+<th>Feature set</th>
+<th>Mask</th>
+<th>R^2</th>
+<th>RMSE</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>exp416</td>
+<td>15 RFE features</td>
+<td>depb &gt; 0, exp410 mask</td>
+<td>0.484</td>
+<td>89.22cm</td>
+<td>7,660</td>
+</tr>
+<tr class="even">
+<td>exp417</td>
+<td>15 RFE features</td>
+<td>depb &gt; 40, exp410 mask</td>
+<td>0.443</td>
+<td>88.09cm</td>
+<td>7,073</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="other-depth-models" class="level3" data-number="5.2.2">
+<h3 data-number="5.2.2" class="anchored" data-anchor-id="other-depth-models"><span class="header-section-number">5.2.2</span> Other Depth Models</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>CV</th>
+<th>R2</th>
+<th>MAE_cm</th>
+<th>RMSE_cm</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>XGBoost</td>
+<td>Random</td>
+<td>0.6209</td>
+<td>59.0</td>
+<td>85.7</td>
+</tr>
+<tr class="even">
+<td>LightGBM</td>
+<td>Random</td>
+<td>0.6206</td>
+<td>58.4</td>
+<td>85.7</td>
+</tr>
+<tr class="odd">
+<td>CNN 31x31 v2</td>
+<td>Spatial</td>
+<td>0.5869</td>
+<td>58.5</td>
+<td>87.3</td>
+</tr>
+<tr class="even">
+<td>CNN 31x31 (v1)</td>
+<td>Spatial</td>
+<td>0.5666</td>
+<td>59.6</td>
+<td>89.4</td>
+</tr>
+<tr class="odd">
+<td>GAM</td>
+<td>Random</td>
+<td>0.5288</td>
+<td>68.1</td>
+<td>95.5</td>
+</tr>
+<tr class="even">
+<td>RF</td>
+<td>Random</td>
+<td>0.4845</td>
+<td>65.2</td>
+<td>89.3</td>
+</tr>
+<tr class="odd">
+<td>RF S1 RFE</td>
+<td>Random</td>
+<td>0.4819</td>
+<td>65.5</td>
+<td>89.3</td>
+</tr>
+<tr class="even">
+<td>Ridge</td>
+<td>Spatial</td>
+<td>0.3349</td>
+<td>77.2</td>
+<td>102.7</td>
+</tr>
+<tr class="odd">
+<td>RF</td>
+<td>Spatial</td>
+<td>0.3246</td>
+<td>77.4</td>
+<td>103.5</td>
+</tr>
+<tr class="even">
+<td>SVM</td>
+<td>Spatial</td>
+<td>0.3092</td>
+<td>75.7</td>
+<td>104.7</td>
+</tr>
+<tr class="odd">
+<td>LightGBM</td>
+<td>Spatial</td>
+<td>0.2991</td>
+<td>78.8</td>
+<td>105.4</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>Spatial</td>
+<td>0.2898</td>
+<td>78.5</td>
+<td>106.1</td>
+</tr>
+<tr class="odd">
+<td>XGBoost S1</td>
+<td>Spatial</td>
+<td>0.2858</td>
+<td>78.7</td>
+<td>104.8</td>
+</tr>
+<tr class="even">
+<td>LightGBM S1</td>
+<td>Spatial</td>
+<td>0.2786</td>
+<td>78.9</td>
+<td>105.3</td>
+</tr>
+<tr class="odd">
+<td>GAM</td>
+<td>Spatial</td>
+<td>0.2644</td>
+<td>80.3</td>
+<td>108.0</td>
+</tr>
+</tbody>
+</table>
+<p>Random CV R^2 for the gradient boosting models was much higher than the spatial CV values. For example XGBoost’s random CV R^2 was 0.6209 compared to the spatial CV R^2 of 0.2898. This shows that depth is more spatially autocorrelated than peat probability.</p>
+</section>
+</section>
+<section id="organic-decomposition" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="organic-decomposition"><span class="header-section-number">5.3</span> Organic decomposition</h2>
+<section id="random-forest-1" class="level3" data-number="5.3.1">
+<h3 data-number="5.3.1" class="anchored" data-anchor-id="random-forest-1"><span class="header-section-number">5.3.1</span> Random Forest</h3>
+<section id="feature-selection-experiments" class="level4" data-number="5.3.1.1">
+<h4 data-number="5.3.1.1" class="anchored" data-anchor-id="feature-selection-experiments"><span class="header-section-number">5.3.1.1</span> Feature selection experiments</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Experiment</th>
+<th>Feature set</th>
+<th>Mean R^2</th>
+<th>Mean RMSE</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>exp421</td>
+<td>Full stack, 125 features</td>
+<td>0.4233</td>
+<td>28.31</td>
+<td>10,679</td>
+</tr>
+<tr class="even">
+<td>exp422</td>
+<td>RFE, 15 features</td>
+<td>0.4341</td>
+<td>28.03</td>
+<td>10,679</td>
+</tr>
+</tbody>
+</table>
+<p>Random cv #### Composition Comparison</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 35%">
+<col style="width: 30%">
+<col style="width: 9%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Approach</th>
+<th>Mean R^2 (avg. of 3 targets)</th>
+<th>Mean RMSE</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>exp426 (COMP_RF_001)</td>
+<td>Iterative residual (sums to 100%)</td>
+<td>0.3999</td>
+<td>21.07</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>exp422</td>
+<td>Independent targets</td>
+<td>0.4341</td>
+<td>28.03</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Random cv ### Gradient Boosting</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Fibric R^2</th>
+<th>Hemic R^2</th>
+<th>Sapric R^2</th>
+<th>Mean R^2</th>
+<th>Features</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RF baseline (COMP_RF_001 / exp426)</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>0.400</td>
+<td>15</td>
+<td>10,679</td>
+</tr>
+<tr class="even">
+<td>XGBoost (COMP_XGB_001)</td>
+<td>0.507</td>
+<td>0.581</td>
+<td>0.670</td>
+<td>0.583</td>
+<td>143</td>
+<td>10,679</td>
+</tr>
+<tr class="odd">
+<td>LightGBM (COMP_LGBM_001)</td>
+<td>0.515</td>
+<td>0.580</td>
+<td>0.674</td>
+<td>0.589</td>
+<td>143</td>
+<td>10,679</td>
+</tr>
+</tbody>
+</table>
+<p>Random cv</p>
+<p>Both of the gradient boosting models outperformed the RF. The largest R^2 gains were in Sapric % and the smallest on Hemic %. Note that the RF model (COMP_RF_001) used the iterative-residual method and a smaller 15 feature RFE set where the Gradient boosting models used all 143 features and independent per-target regression. So part of the gap could reflect the larger feature set or the unconstrained formulation.</p>
+</section>
+</section>
+</section>
+<section id="below-ground-carbon" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="below-ground-carbon"><span class="header-section-number">5.4</span> Below ground Carbon</h2>
+</section>
+<section id="above-ground-carbon" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="above-ground-carbon"><span class="header-section-number">5.5</span> Above ground Carbon</h2>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
