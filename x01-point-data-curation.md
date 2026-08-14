@@ -4,7 +4,7 @@
 
 Peat presence, depth, and decomposition models were trained using soil observation data from three main
 sources: the Minnesota Peat Inventory, the National Soil Information System (NAISIS), and the Minnesota 
-Biological Survey (MBS).
+Biological Survey (MBS). Just a suggestions here. Editing content directly. Kellen test test
 
 The Minnesota Peat Inventory is a dataset collected by the Minnesota DNR during the 1970's and 80's. It
 contains probe measurement peat depths across peatlands in Minnesota as well as laboratory analyzed
@@ -18,7 +18,7 @@ The Minnesota Biological Survey contribues presence and absence observations der
 community classifications where peat associated community types were coded as peat present and upland or
 non peat communities were coded as peat absent. 
 
-Together these sources provide a spatially distributed dataset across Minnesota.
+Together these sources provide a spatially distributed dataset across Minnesota. 
 
 
 ## Data Curation Methods
