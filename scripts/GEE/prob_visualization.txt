@@ -1,0 +1,79 @@
+// Probability Scipt
+// uint8 scale: pixel_value * 0.005 = probability (0-1)
+// Thresholds: RF=0.452 (px=90), XGB=0.450 (px=90), LGBM=0.362 (px=72)
+
+var prob_rf   = ee.Image('projects/wired-freehold-444222-q5/assets/prob_rf_uint8_COG').multiply(0.005).rename('RF');
+var prob_xgb  = ee.Image('projects/wired-freehold-444222-q5/assets/prob_xgb_uint8_COG').multiply(0.005).rename('XGB');
+var prob_lgbm = ee.Image('projects/wired-freehold-444222-q5/assets/prob_lgbm_uint8_COG').multiply(0.005).rename('LGBM');
+
+var mn = ee.FeatureCollection('TIGER/2018/States')
+           .filter(ee.Filter.eq('NAME', 'Minnesota'));
+
+Map.centerObject(mn, 7);
+
+// Visualization parameters
+var prob_vis = {
+  min: 0, max: 1,
+  palette: ['#f7fbff','#c6dbef','#6baed6','#2171b5','#08306b']
+};
+
+var mask_vis = {min: 0, max: 1, palette: ['white', '#2d6a4f']};
+
+// Continuous probability layers
+Map.addLayer(prob_rf,   prob_vis, 'RF Probability (threshold=0.452)',   true);
+Map.addLayer(prob_xgb,  prob_vis, 'XGB Probability (threshold=0.450)',  false);
+Map.addLayer(prob_lgbm, prob_vis, 'LGBM Probability (threshold=0.362)', false);
+
+// Binary peat masks at threshold
+var mask_rf   = prob_rf.gte(0.452).selfMask();
+var mask_xgb  = prob_xgb.gte(0.450).selfMask();
+var mask_lgbm = prob_lgbm.gte(0.362).selfMask();
+
+Map.addLayer(mask_rf,   mask_vis, 'RF Mask (0.452)',   false);
+Map.addLayer(mask_xgb,  mask_vis, 'XGB Mask (0.450)',  false);
+Map.addLayer(mask_lgbm, mask_vis, 'LGBM Mask (0.362)', false);
+
+
+// MN boundary 
+Map.addLayer(mn, {color: 'red'}, 'Minnesota', false);
+
+// Stats
+var geom = mn.geometry();
+[['RF', prob_rf, 0.452], ['XGB', prob_xgb, 0.450], ['LGBM', prob_lgbm, 0.362]]
+  .forEach(function(item) {
+    var name = item[0]; var img = item[1]; var thresh = item[2];
+    img.reduceRegion({
+      reducer: ee.Reducer.mean(),
+      geometry: geom, scale: 5000, maxPixels: 1e10
+    }).evaluate(function(stats) {
+      print(name + ' mean prob:', stats);
+    });
+    img.gte(thresh).reduceRegion({
+      reducer: ee.Reducer.mean(),
+      geometry: geom, scale: 5000, maxPixels: 1e10
+    }).evaluate(function(stats) {
+      var key = Object.keys(stats)[0];
+      print(name + ' % peat at threshold ' + thresh + ':', 
+            (stats[key] * 100).toFixed(1) + '%');
+    });
+  });
+
+// Legend
+var legend = ui.Panel({style: {position: 'bottom-left', padding: '8px'}});
+legend.add(ui.Label('Peat Probability', {fontWeight: 'bold'}));
+var palette = ['#f7fbff','#c6dbef','#6baed6','#2171b5','#08306b'];
+var labels  = ['0.0', '0.25', '0.50', '0.75', '1.0'];
+palette.forEach(function(col, i) {
+  legend.add(ui.Panel([
+    ui.Label('', {backgroundColor: col, padding: '8px', margin: '2px'}),
+    ui.Label(labels[i], {margin: '4px'})
+  ], ui.Panel.Layout.flow('horizontal')));
+});
+legend.add(ui.Label('─────────────────', {color: '#ccc'}));
+legend.add(ui.Label('Thresholds', {fontWeight: 'bold'}));
+[['RF',   '0.452', '#e41a1c'],
+ ['XGB',  '0.450', '#ff7f00'],
+ ['LGBM', '0.362', '#984ea3']].forEach(function(item) {
+  legend.add(ui.Label(item[0] + ': ' + item[1], {color: item[2], fontWeight: 'bold'}));
+});
+Map.add(legend);

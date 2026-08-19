@@ -1,0 +1,88 @@
+// Depth Visualization Script
+// uint16: value = depth in cm (1:1 scale), nodata = 65535
+
+var depth = ee.Image('projects/wired-freehold-444222-q5/assets/depth_uint16_COG')
+              .updateMask(
+                ee.Image('projects/wired-freehold-444222-q5/assets/depth_uint16_COG')
+                  .neq(65535)
+              );
+
+var mn = ee.FeatureCollection('TIGER/2018/States')
+           .filter(ee.Filter.eq('NAME', 'Minnesota'));
+
+Map.centerObject(mn, 7);
+
+// Continuous depth
+var depth_vis = {
+  min: 0, max: 400,
+  palette: ['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']
+};
+Map.addLayer(depth, depth_vis, 'Peat Depth (cm)', true);
+
+// Binned depth class
+var binned = depth
+  .where(depth.lte(50),  1)
+  .where(depth.gt(50).and(depth.lte(100)),  2)
+  .where(depth.gt(100).and(depth.lte(200)), 3)
+  .where(depth.gt(200).and(depth.lte(300)), 4)
+  .where(depth.gt(300), 5);
+
+Map.addLayer(binned, {
+  min: 1, max: 5,
+  palette: ['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']
+}, 'Depth Classes (0-50, 50-100, 100-200, 200-300, 300+cm)', false);
+
+// MN boundary 
+Map.addLayer(mn, {color: 'black'}, 'Minnesota', false);
+
+// Stats
+depth.reduceRegion({
+  reducer: ee.Reducer.mean()
+            .combine(ee.Reducer.min(),'',true)
+            .combine(ee.Reducer.max(),'',true)
+            .combine(ee.Reducer.percentile([25,50,75,90]),'',true),
+  geometry: mn.geometry(),
+  scale: 1000,
+  maxPixels: 1e10
+}).evaluate(function(stats) {
+  print('Depth stats (1km sample):');
+  print('  Mean (cm):',   stats['b1_mean']   ? stats['b1_mean'].toFixed(1)   : 'n/a');
+  print('  Median (cm):', stats['b1_p50']    ? stats['b1_p50'].toFixed(1)    : 'n/a');
+  print('  Max (cm):',    stats['b1_max']    ? stats['b1_max'].toFixed(1)    : 'n/a');
+  print('  p75 (cm):',    stats['b1_p75']    ? stats['b1_p75'].toFixed(1)    : 'n/a');
+  print('  p90 (cm):',    stats['b1_p90']    ? stats['b1_p90'].toFixed(1)    : 'n/a');
+});
+
+// Legend
+var legend = ui.Panel({style:{position:'bottom-left',padding:'8px',width:'180px'}});
+legend.add(ui.Label('Peat Depth (cm)',{fontWeight:'bold',fontSize:'14px'}));
+
+var palette  = ['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494'];
+var labels   = ['0','100','200','300','400+'];
+var gradient = ui.Thumbnail({
+  image: ee.Image.pixelLonLat().select(0)
+           .multiply(0).add(ee.Image.pixelLonLat().select(1))
+           .visualize({min:0,max:1,palette:palette}),
+  params: {bbox:[0,0,1,0.1],dimensions:'160x20'},
+  style: {margin:'4px'}
+});
+legend.add(gradient);
+legend.add(ui.Panel(
+  labels.map(function(l){ return ui.Label(l,{margin:'0 18px 0 0',fontSize:'10px'}); }),
+  ui.Panel.Layout.flow('horizontal')
+));
+
+legend.add(ui.Label('─────────────────',{color:'#ccc'}));
+legend.add(ui.Label('Depth Classes',{fontWeight:'bold'}));
+[['0–50 cm',   '#ffffcc'],
+ ['50–100 cm', '#a1dab4'],
+ ['100–200 cm','#41b6c4'],
+ ['200–300 cm','#2c7fb8'],
+ ['300+ cm',   '#253494']].forEach(function(item){
+  legend.add(ui.Panel([
+    ui.Label('',{backgroundColor:item[1],padding:'8px',margin:'2px'}),
+    ui.Label(item[0],{margin:'4px'})
+  ],ui.Panel.Layout.flow('horizontal')));
+});
+
+Map.add(legend);

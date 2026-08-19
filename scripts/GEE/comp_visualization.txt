@@ -1,0 +1,93 @@
+// ── Composition Visualization Script ─────────────────────────────────
+// uint8: pixel_value * 0.5 = percent (0-100%)
+// nodata = 255
+// Components: Fibric (R), Hemic (G), Sapric (B), Mineral
+
+var fibric  = ee.Image('projects/wired-freehold-444222-q5/assets/comp_fibric_uint8_COG');
+var hemic   = ee.Image('projects/wired-freehold-444222-q5/assets/comp_hemic_uint8_COG');
+var sapric  = ee.Image('projects/wired-freehold-444222-q5/assets/comp_sapric_uint8_COG');
+var mineral = ee.Image('projects/wired-freehold-444222-q5/assets/comp_mineral_uint8_COG');
+
+var mn = ee.FeatureCollection('TIGER/2018/States')
+           .filter(ee.Filter.eq('NAME', 'Minnesota'));
+
+Map.centerObject(mn, 7);
+
+// Scale to percent
+var f_pct = fibric.multiply(0.5).rename('Fibric').updateMask(fibric.neq(255));
+var h_pct = hemic.multiply(0.5).rename('Hemic').updateMask(hemic.neq(255));
+var s_pct = sapric.multiply(0.5).rename('Sapric').updateMask(sapric.neq(255));
+var m_pct = mineral.multiply(0.5).rename('Mineral').updateMask(mineral.neq(255));
+
+// Component layers 
+var pct_vis = {min:0, max:100, palette:['#ffffff','#08306b']};
+
+Map.addLayer(f_pct, {min:0,max:100,palette:['#ffffff','#d73027']}, 'Fibric %',   false);
+Map.addLayer(h_pct, {min:0,max:100,palette:['#ffffff','#1a9850']}, 'Hemic %',    false);
+Map.addLayer(s_pct, {min:0,max:100,palette:['#ffffff','#4575b4']}, 'Sapric %',   false);
+Map.addLayer(m_pct, {min:0,max:100,palette:['#ffffff','#8c510a']}, 'Mineral %',  false);
+
+// RGB composite
+// Renormalize F+H+S to sum=100 (excluding mineral)
+var fhs_total = f_pct.add(h_pct).add(s_pct);
+var valid_mask = fhs_total.gt(0);
+
+var f_norm = f_pct.divide(fhs_total).multiply(255).toUint8().updateMask(valid_mask);
+var h_norm = h_pct.divide(fhs_total).multiply(255).toUint8().updateMask(valid_mask);
+var s_norm = s_pct.divide(fhs_total).multiply(255).toUint8().updateMask(valid_mask);
+
+var rgb = ee.Image.cat([f_norm, h_norm, s_norm]).rename(['R','G','B']);
+Map.addLayer(rgb, {min:0, max:255}, 'Decomposition RGB (F=R, H=G, S=B)', true);
+
+// Dominant class
+// 1=Fibric, 2=Hemic, 3=Sapric, 4=Mineral
+var dominant = f_pct.rename('pct').addBands(h_pct.rename('pct'))
+  .addBands(s_pct.rename('pct')).addBands(m_pct.rename('pct'))
+  .reduce(ee.Reducer.max());
+
+var dom_class = ee.Image(1).where(h_pct.gt(f_pct).and(h_pct.gt(s_pct)).and(h_pct.gt(m_pct)), 2)
+                           .where(s_pct.gt(f_pct).and(s_pct.gt(h_pct)).and(s_pct.gt(m_pct)), 3)
+                           .where(m_pct.gt(f_pct).and(m_pct.gt(h_pct)).and(m_pct.gt(s_pct)), 4)
+                           .updateMask(valid_mask);
+
+Map.addLayer(dom_class, {
+  min:1, max:4,
+  palette:['#d73027','#1a9850','#4575b4','#8c510a']
+}, 'Dominant Class (F/H/S/M)', false);
+
+// MN boundary 
+Map.addLayer(mn, {color:'black'}, 'Minnesota', false);
+
+// Stats
+var geom = mn.geometry();
+[['Fibric', f_pct], ['Hemic', h_pct], ['Sapric', s_pct], ['Mineral', m_pct]]
+  .forEach(function(item) {
+    item[1].reduceRegion({
+      reducer: ee.Reducer.mean(),
+      geometry: geom, scale: 5000, maxPixels: 1e10
+    }).evaluate(function(stats) {
+      var key = Object.keys(stats)[0];
+      print(item[0] + ' mean %:', stats[key] !== null ?
+            stats[key].toFixed(1) + '%' : 'no data');
+    });
+  });
+
+// Legend
+var legend = ui.Panel({style:{position:'bottom-left',padding:'8px',width:'200px'}});
+legend.add(ui.Label('Peat Composition', {fontWeight:'bold',fontSize:'14px'}));
+legend.add(ui.Label('RGB: Fibric=Red  Hemic=Green  Sapric=Blue',
+                    {fontSize:'10px',color:'#555'}));
+legend.add(ui.Label('─────────────────',{color:'#ccc'}));
+legend.add(ui.Label('Dominant Class', {fontWeight:'bold'}));
+
+[['Fibric',  '#d73027'],
+ ['Hemic',   '#1a9850'],
+ ['Sapric',  '#4575b4'],
+ ['Mineral', '#8c510a']].forEach(function(item) {
+  legend.add(ui.Panel([
+    ui.Label('', {backgroundColor:item[1],padding:'8px',margin:'2px'}),
+    ui.Label(item[0], {margin:'4px'})
+  ], ui.Panel.Layout.flow('horizontal')));
+});
+
+Map.add(legend);
