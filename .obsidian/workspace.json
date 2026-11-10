@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "x03-model-implementation.md",
+                "file": "x05-discussion.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "x03-model-implementation"
+              "title": "x05-discussion"
             }
           }
         ]
@@ -185,8 +185,8 @@
   },
   "active": "3cadaf8733c47bf8",
   "lastOpenFiles": [
-    "x01-point-data-curation.md",
     "x03-model-implementation.md",
+    "x01-point-data-curation.md",
     "x02-covariate-curation.md",
     "x05-discussion.md",
     "x04-results.md",
