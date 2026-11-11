@@ -13,7 +13,6 @@ book:
     - index.md
     - x01-point-data-curation.md
     - x02-covariate-curation.md
-	# add a chapter on X
     - x03-model-implementation.md
     - x04-results.md
     - x05-discussion.md
