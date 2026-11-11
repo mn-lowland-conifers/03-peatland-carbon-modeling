@@ -3,16 +3,16 @@
 ## Final Model Summary
 
 
-| Layer | Model | Spatial CV | Random CV | Caveat |
-|---|---|---|---|---|
-| Probability | PROB_LGBM_V2 (threshold 0.362) | AUC 0.9642 | AUC 0.9766 | Brier 0.0483 spatial, 0.0383 random |
-| Depth | DEPTH_LGBM_V2_TUNED (base), deep-tail blend (a075_s60) is the mapped product | R² 0.2925 (blend 0.2581) | R² 0.4273 (blend 0.4078) | Spatial CV values describe the model |
-| Fibric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1398 | R² 0.3726 | Retrained without NWI |
-| Hemic | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.0535 | R² 0.3389 | Almost no spatial skill; earlier tuned value 0.216 was not reproduced |
-| Sapric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1935 | R² 0.5947 | Retrained without NWI |
-| Full-profile carbon | CARBON_FULL_DEPTHCURVE_2026 | R² 0.8623 | R² 0.8673 | Near-tautological, 20.12 kgC/m² intercept |
-| 1 m carbon | BD-only RF | R² 0.395 | n/a | Validated, not shipped |
-| Aboveground carbon (exploratory RF) | AGC_RF_001 | R² 0.204 | n/a | Not used, the product is the stand inventory / Jenkins overlay |
+| Layer | Model | Spatial CV | Random CV |
+|---|---|---|---|
+| Probability | PROB_LGBM_V2 (threshold 0.362) | AUC 0.9642 | AUC 0.9766 | 
+| Depth | DEPTH_LGBM_V2_TUNED (base), deep-tail blend (a075_s60) is the mapped product | R² 0.2925 (blend 0.2581) | R² 0.4273 (blend 0.4078) | 
+| Fibric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1398 | R² 0.3726 | 
+| Hemic | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.0535 | R² 0.3389 | 
+| Sapric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1935 | R² 0.5947 | 
+| Full-profile carbon | CARBON_FULL_DEPTHCURVE_2026 | R² 0.8623 | R² 0.8673 |
+| 1 m carbon | BD-only RF | R² 0.395 | n/a | 
+| Aboveground carbon (exploratory RF) | AGC_RF_001 | R² 0.204 | n/a |
 
 ## Peat Probability
 
