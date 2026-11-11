@@ -1,7 +1,8 @@
 # Covariate Curation
 
 ### Computing Environment
-Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL (ABI mismatches, missing libpoppler, libtiff version conflicts). 
+Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL.
+
 ### Reference Grid
 All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data.
 
@@ -18,8 +19,7 @@ Tiles mosaicked into a single statewide raster and clipped to the Minnesota stat
 minnesota_dem_10m.tif
 
 ### Terrain Derivatives (WhiteboxTools)
-WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. 
-Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process.
+WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process.
 
 ### Processing Strategy
 Two approaches were used depending if the derivative is affected by watershed context:
@@ -29,13 +29,13 @@ planCurvature, profileCurvature, meanCurvature, maximalCurvature
 geomorphons, pennockLandformClass
 devfrommeanelev (4m, 8m, 16m), diffFromMeanElev
 relativeTopographicPosition (4m, 8m, 16m)
-By HUC8 watershed: For derivatives that are impacted by flow patterns, a different approach was used. Minnesota was divided into 127 HUC8 watersheds and a 5km buffer was applied around each HUC8. This was done to prevent potential edge effects from occurring. Derivatives were computed on each buffered watershed tile independently with individual SLURM jobs (one per HUC8), then mosaicked back together with the overlapping buffer zones removed.
+By HUC8 watershed: For derivatives that are impacted by water flow, a different approach was used. Minnesota was divided into 127 HUC8 watersheds and a 5km buffer was applied to each HUC8 polygon to prevent edge effects. Derivatives were computed on each buffered watershed tile independently with individual SLURM jobs and then mosaicked back together with the overlapping buffer areas removed.
 breached_dem (hydrologically conditioned DEM)
 d8FlowAccumulation, dInfFlowAccumulation
 wetnessIndex (TWI)
 
 ### Hydrological Modification
-Minnesota peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching approach was used to carve channels through barriers blocking drainage versus raising the surface itself. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values.
+Peatlands often exist in low-lying poorly drained areas. When preparing a DEM for hydrological analysis, artificial depressions in the DEM are removed so that waterflow can run continuously throughout the landscape. A breaching method was used to carve channels through barriers blocking drainage. This allows water to flow continuously through the model, producing more accurate flow accumulation and wetness index values.
 Modification workflow by HUC8 watershed:
 Step
 Tool
@@ -89,17 +89,17 @@ Bands that were originally at a 20m resolution (B05–B08A, B11, B12) were resam
 
 ### Sentinel 2 Export and Mosaicking
 
-GEE automatically tiled the whole state exports. Tiles were downloaded from google drive to local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.
+GEE automatically tiled the whole state exports. Tiles were downloaded from google drive to a local machine then uploaded into the MSI project. Once in MSI, tiles were mosaicked into a single multiband tiff file using gdal_merge.py. LZW compression, internal tiling, and BIGTIFF were used to merge the outputs.
 
 ### Tasseled Cap 
 
-Tasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), greenness(TCG), and wetness(TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs. spring/fall)
+Tasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), Greenness (TCG), and wetness (TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs. spring/fall)
 
 ### Sentinel-1 
 
-**Still in the works***
-Original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, while limited, S1 survived RFE and increased R2 values
-Changes in the export (combining ascending and descending runs, extending date range) will hopefully fill the missing data:
+The final probability and depth models use the combined (ascending and descending) Sentinel-1 composites (`s1_spring_combined`, `s1_summer_combined` and `s1_fall_combined`).
+The original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, the S1 covariate survived recursive feature elimination (RFE) in initial Random Forest model runs and increased R2 values. The export was changed to combine ascending and descending runs and to extend the date range, which gave the combined covariates used in the final models. 
+
 Three bands per composite: VV (dB), VH (dB), VV/VH ratio.
 Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.
 
@@ -112,12 +112,12 @@ PRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resample
 ### National Wetlands Inventory (NWI) 
 Source: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)
 
-The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio with chunked processing to manage the large amount of features (1,000,000+) Polygons were classified by their cowardin code and separated into 3 distinct groupings: 
-0 = Non-wetland (background)
+The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio. Polygons were classified by their Cowardin code and separated into 3 distinct groupings: 
+0 = Non-wetland
 1 = Wetland
 2 = Lowland conifer (PFO4, PSS4, PFO2, PSS2, mixed codes containing "/4")
 
-The encoding variants of the raster was evaluated during initial random forest experiments and the 3-class classification was found to give no measurable improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland
+The encoding classes were evaluated during initial random forest model runs and the 3-class classification gave no improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland
 
 ### Distance Features
 Source: Minnesota statewide vector datasets
@@ -125,12 +125,12 @@ Roads: MnDOT Roadway Routes
 Streams/rivers: DNR RiversStreams
 Water bodies: DNR HydroFeatures
 
-Euclidean distance rasters were computed from vector layers using GDAL proximity on MSI.
+Euclidean distance rasters were computed from vector layers using GDAL proximity.
 
 ### gNATSGO Organic Soils
 Source: gNATSGO for Minnesota 
 
-gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service's soils product. It merges SSURGO withs STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy:
+gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service's soils product. It merges SSURGO with STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy:
 0: Non-organic
 1: Shallow Peat (histic epipedon, non-Histosol, 20–40cm organic)
 2: Terric Saprists
@@ -141,19 +141,19 @@ gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural 
 7: Typic Fibrists
 8: Sphagno Histosols
 
-A binary variant of this raster was also created that flags any mukey containing an organic component regardless of dominance. 
+A binary version of this raster was also created using any MUKEY containing an organic component. 
 
-Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as refernce/validation layers and used selectively in other peat property models. 
+Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as reference/validation layers and used in peat property models. 
 
 ### Categorical Layers
 
-These layers produced visible polygon shaped artifacts such as hard geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges from these rasters rather than responding to environmental gradients they were excluded. 
+These layers produced visible polygon shaped artifacts such as geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges they were excluded from training. 
 
 10m_quaternary_geology.tif — Quaternary Geology classification
 pennockLandformClass.tif — Pennock Landform Class
 geomorphons.tif — geomorphon landform classification
 
-These were tested in experiments exp401–exp408 and removed in exp409/exp410. AUC cost was minimal (~0.002) and the visual output quality improved substantially.
+The AUC cost from removal of these covariates was found to be minimal in experimentation (~0.002) and the visual output quality improved.
  
 
 
