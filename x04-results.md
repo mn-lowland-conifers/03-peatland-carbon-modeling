@@ -1,5 +1,18 @@
-
 # Results
+
+## Final Model Summary
+
+
+| Layer | Model | Spatial CV | Random CV | Caveat |
+|---|---|---|---|---|
+| Probability | PROB_LGBM_V2 (threshold 0.362) | AUC 0.9642 | AUC 0.9766 | Brier 0.0483 spatial, 0.0383 random |
+| Depth | DEPTH_LGBM_V2_TUNED (base), deep-tail blend (a075_s60) is the mapped product | R² 0.2925 (blend 0.2581) | R² 0.4273 (blend 0.4078) | Spatial CV values describe the model |
+| Fibric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1398 | R² 0.3726 | Retrained without NWI |
+| Hemic | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.0535 | R² 0.3389 | Almost no spatial skill; earlier tuned value 0.216 was not reproduced |
+| Sapric | COMP_LGBM_DECLEAN (LightGBM, 35 features) | R² 0.1935 | R² 0.5947 | Retrained without NWI |
+| Full-profile carbon | CARBON_FULL_DEPTHCURVE_2026 | R² 0.8623 | R² 0.8673 | Near-tautological, 20.12 kgC/m² intercept |
+| 1 m carbon | BD-only RF | R² 0.395 | n/a | Validated, not shipped |
+| Aboveground carbon (exploratory RF) | AGC_RF_001 | R² 0.204 | n/a | Not used, the product is the stand inventory / Jenkins overlay |
 
 ## Peat Probability
 
@@ -12,11 +25,6 @@
 | F1 (threshold = 0.327) | 0.8445 | 0.8061 |
 | n | 57,134 | 57,134 |
 
-The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where observations that are closer to one another are more similar to each other and that random folds are overestimating performance. 
-
-Model experiments testing the benefit of including categorical features resulted in AUC values of 0.9740 (exp407, with categorical) versus 0.9722 (exp410, without categorical) which was determined to be a minimal decrease in performance relative to the visual improvement of the spatial inferences.
-
-The NWI encoding experiments produced AUC 0.956 on the full dataset (exp403-405) and AUC 0.973 on the 0-20cm dropped dataset (exp406-408).
 
 ### Gradient Boosting (XGBoost and LightGBM)
 
@@ -25,7 +33,6 @@ The NWI encoding experiments produced AUC 0.956 on the full dataset (exp403-405)
 | XGBoost (PROB_XGB_002) | 0.9615 | 0.8892 | 0.8105 | 57,134 |
 | LightGBM (PROB_LGBM_002) | 0.9624 | 0.8917 | 0.8152 | 57,134 |
 
-Random cv AUC for the initial run of the LightGBM model (PROB_LGBM_001) was 0.9965 which was an overestimate caused by inclusion of the point_id column in the training data. 
 
 ### Generalized Additive Model (GAM)
 
@@ -73,10 +80,18 @@ Random cv AUC for the initial run of the LightGBM model (PROB_LGBM_001) was 0.99
 | CNN 31×31 v2 | 0.764 | 0.694 | 0.808 | 0.786 | 0.832 |
 | CNN 31×31 v3 | 0.764 | 0.694 | 0.853 | 0.853 | 0.853 |
 
-The differences between the F1-optimal and Youden's J thresholds between the models shows their differences in probability distributions. For example the GAM, SVM, and CNN require higher decision thresholds to get balanced precision and recall because their predicted probabilities are compressed.
-
-**Add calibration curves and Brier scores**
 ### Probability Model Selection
+
+
+| Metric | Spatial CV | Random CV |
+|--------|-----------|-----------|
+| AUC | 0.9642 | 0.9766 |
+| Average precision | 0.9002 | 0.9325 |
+| Brier score | 0.0483 | 0.0383 |
+| F1 at 0.362 | 0.8163 | -- |
+| Threshold (median of five metrics) | 0.362 | |
+| n | 57,134 | 57,134 |
+
 
 | Model                | CV      | AUC    | Avg Precision | F1     | Brier  |
 | -------------------- | ------- | ------ | ------------- | ------ | ------ |
@@ -93,11 +108,9 @@ The differences between the F1-optimal and Youden's J thresholds between the mod
 | SVM RBF              | Spatial | 0.9525 | 0.8528        | 0.8010 | 0.0753 |
 | Logistic Regression  | Spatial | 0.9454 | 0.8139        | 0.7757 | 0.0918 |
 | CNN 15×15            | Spatial | 0.8914 | 0.7690        | 0.7313 | 0.2243 |
-| CNN 31×31            | Spatial | 0.9375 | 0.8905        | 0.8084 | 0.1107 |
-| CNN 31×31 v2         | Spatial | 0.9621 | 0.9302        | 0.8527 | 0.0786 |
-| CNN 31×31 focal loss | Spatial | 0.9620 | 0.9303        | 0.8527 | 0.0806 |
-
-**Note that not all of the models have S1 included as a covariate**
+| CNN 31×31 v2 (PROB_CNN_002) | Spatial | 0.9375 | 0.8905        | 0.8084 | 0.1107 |
+| CNN 31×31 v3 (PROB_CNN_003) | Spatial | 0.9621 | 0.9302        | 0.8527 | 0.0786 |
+| CNN 31×31 focal loss (PROB_CNN_004) | Spatial | 0.9620 | 0.9303        | 0.8527 | 0.0806 |
 
 ## Peat Depth
 
@@ -141,6 +154,21 @@ The differences between the F1-optimal and Youden's J thresholds between the mod
 | GAM            | Spatial | 0.2644 | 80.3   | 108.0   |
 Random CV R^2 for the gradient boosting models was much higher than the spatial CV values. For example XGBoost's random CV R^2 was 0.6209 compared to the spatial CV R^2 of 0.2898. This shows that depth is more spatially autocorrelated than peat probability.
 
+### Final depth models (masked, PROB_LGBM_V2 ≥ 0.362, n = 8,223)
+
+| Model | Spatial R² | Random R² | Spatial MAE | Random MAE |
+|---|---|---|---|---|
+| DEPTH_RF_TUNED | 0.2731 | -- | -- | -- |
+| DEPTH_XGB_TUNED | 0.2885 | -- | -- | -- |
+| DEPTH_LGBM_V2_TUNED | 0.2925 | 0.4273 | 74.6 cm | 66.1 cm |
+| Deep-tail blend (a075_s60) | 0.2581 | 0.4078 | 78.4 cm | 68.3 cm |
+
+### Field validation, 2025 season (123 sites)
+
+| Bias | MAE | RMSE | R² | Pearson r |
+|---|---|---|---|---|
+| -59.7 cm | 107.6 cm | 150.5 cm | -0.291 | 0.015 |
+
 ## Organic decomposition
 
 ### Random Forest
@@ -168,11 +196,22 @@ Random cv
 | LightGBM (COMP_LGBM_001) | 0.515 | 0.580 | 0.674 | 0.589 | 143 | 10,679 |
 Random cv
 
-Both of the gradient boosting models outperformed the RF. The largest R^2 gains were in Sapric % and the smallest on Hemic %. Note that the RF model (COMP_RF_001) used the iterative-residual method and a smaller 15 feature RFE set where the Gradient boosting models used all 143 features and independent per-target regression. So part of the gap could reflect the larger feature set or the unconstrained formulation.
+### Spatial cross-validation results by algorithm
+
+The results above for exp421 to exp426 and the first XGBoost and LightGBM models (COMP_XGB_001, COMP_LGBM_001) are random cross-validation only and are development history. The spatial cross-validation results used to select the final models were:
+
+| Target | Random Forest | XGBoost | LightGBM |
+|---|---|---|---|
+| Fibric | 0.105 / 0.38 | 0.08 / 0.41 | 0.156 / 0.436 |
+| Hemic | 0.137 / 0.31 | 0.060 / 0.43 | 0.216 / 0.446 |
+| Sapric | 0.207 / 0.570 | 0.189 / 0.586 | 0.204 / 0.577 |
+
 
 ## Below ground Carbon
 
+Full-profile carbon stock depth curve, fitted on 1,609 Criterion B pedons: C_stock_full_kgm2 = 0.5043 × max_peat_depth_cm + 20.12.
 
-
-## Above ground Carbon
-
+| Model | Spatial R² | Spatial MAE | Random R² |
+|---|---|---|---|
+| **Linear (final)** | **0.8623** | **16.14** | 0.8673 |
+| RF (depth-only) | 0.8456 | 16.83 | 0.8506 |
