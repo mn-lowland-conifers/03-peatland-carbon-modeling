@@ -152,7 +152,6 @@
 | XGBoost S1     | Spatial | 0.2858 | 78.7   | 104.8   |
 | LightGBM S1    | Spatial | 0.2786 | 78.9   | 105.3   |
 | GAM            | Spatial | 0.2644 | 80.3   | 108.0   |
-Random CV R^2 for the gradient boosting models was much higher than the spatial CV values. For example XGBoost's random CV R^2 was 0.6209 compared to the spatial CV R^2 of 0.2898. This shows that depth is more spatially autocorrelated than peat probability.
 
 ### Final depth models (masked, PROB_LGBM_V2 ≥ 0.362, n = 8,223)
 
@@ -197,8 +196,6 @@ Random cv
 Random cv
 
 ### Spatial cross-validation results by algorithm
-
-The results above for exp421 to exp426 and the first XGBoost and LightGBM models (COMP_XGB_001, COMP_LGBM_001) are random cross-validation only and are development history. The spatial cross-validation results used to select the final models were:
 
 | Target | Random Forest | XGBoost | LightGBM |
 |---|---|---|---|
