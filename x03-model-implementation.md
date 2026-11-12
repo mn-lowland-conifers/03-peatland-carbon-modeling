@@ -1,125 +1,108 @@
 # Model Implementation
 
-This section goes over the development and evaluation of models created to predict peat presence and other characteristics. The modeling workflow had four steps: (1) training data curation for each property being modeled. (2) feature selection using recursive feature elimination. (3) model training and hyperparameter tuning. (4) model evaluation using both random and spatial cross validation. 
+This section covers the development and evaluation of models created to predict peat presence and other characteristics. The modeling workflow has four steps: (1) curation of the training data for each property that is being modeled. (2) covariate feature selection. (3) model training and hyperparameter tuning. (4) model evaluation. 
 
-In total, four statewide raster maps were produced: the probability of peat presence; peat depth; the composition of the upper 50 cm of peat as fibric, hemic, and sapric percent; and carbon stock. The final probability, depth, and composition models chosen are LightGBM models. The carbon stock map is calculated from the depth map using a depth curve. Earlier model versions and the other algorithms that were tested are documented alongside the final models.
+In total, four statewide raster maps were produced including the probability of peat presence, peat depth, the composition of the upper meter of peat as fibric, hemic, and sapric percent, and carbon stock. The final probability, depth, and composition models use a LightGBM algorithm. The carbon stock map was then calculated from the depth map using a linear depth–carbon stock curve. Earlier model versions and other algorithms that were tested are documented alongside the selected production models.
 
 ## Overview
 
 ### Cross-Validation
 
-Two cross-validation strategies were used in model development and are reported alongside each models results
+Cross-validation is a method used in machine learning to evaluate the performance of a model. Two cross-validation strategies were used in development and are reported with each model’s results.
 
 #### Random cross-validation
-Random cross-validation used stratified k-fold splitting (k=5) and randomly assigned observations to folds. This approach is a standard method but it can create bias when training points that are spatially clustered. Because nearby points tend to have similar covariate values, a randomly held out point may be spatially close to a training point which allows the model to interpolate instead of generalize. This can inflate the metrics used to evaluate the effectiveness of models. 
+Random cross-validation used stratified k-fold splitting (k=5) and randomly assigned observations to folds. This approach is a standard method in machine learning but it can create bias when training points that are clustered. Because nearby points often have similar covariate values, a randomly held out point may be geographically close to a training point which allows the model to interpolate on nearby data. This can inflate the metrics used to evaluate the effectiveness of models. 
 
 #### Spatial block cross-validation
-Spatial block cross-validation was used to replicate independent validation. The boundary of the spatial model (Minnesota) was split into a 50 km x 50 km grid. All training points that shared a block were assigned to the same fold and then blocks were allocated to folds in a round robin fashion. When a block is held out for validation, the model has never seen any training point within that geographic area forcing generalization across space instead of using local data to make an interpretation. This method produces a lower but more reliable estimate. The performance drop from the random and spatial cross-validation in the models shows spatial autocorrelation in the training data. 
+Spatial block cross-validation was used to replicate independent validation. The boundary of the project area (Minnesota) was split into a 50 km x 50 km grid. All training points that shared a block were assigned to the same fold and then blocks were allocated to folds in a round robin fashion. When a block is held out for validation, the model has never seen any training point within that geographic area forcing generalization across space. This method produces a lower but more reliable estimate. The performance drop from the random to spatial cross-validation in the results shows spatial autocorrelation that is occurring in the training data. 
 
 ### Shared Modeling Decisions
 
-Several decisions were consistent across all target properties and model types.
+Some decisions made in the modeling workflow were consistent across all target properties and model types:
 
-#### Coordinate reference system
-All training points and covariates were projected to EPSG:5070 (Albers Equal Area Conic, NAD83) before modeling.
+1) CRS - All training points and covariates are projected to Albers Equal Area Conic NAD83 (EPSG:5070)
 
-#### Missing Data
-Features with missing values at training point locations were imputed with the column median computed from training data only. This primarily impacted distance based features at edge locations and Sentinel-1 backscatter features where coverage was incomplete.
+2) Missing Data - Covariate features with missing data at training point locations were imputed with the column median from training data only. This affected distance features at edge locations and Sentinel-1 features where coverage was incomplete.
 
-#### Negative prediction clipping
-Depth regression models (XGBoost, LightGBM, GAM, SVM) can produce negative predictions. This impacted inferences created from the peat depth model. All negative depth predictions were clipped to zero.
+3) Negative prediction clipping - The depth regression models tested (XGBoost, LightGBM, GAM, SVM) can sometimes produce negative predictions which is unrealistic because peat depth can not be negative. All negative predictions were clipped to zero.
 
-***NOTE have not run other approaches to get non-negative outputs. (ie Tweedie or Gamma loss function)
-
-#### Model Catalog
-All trained models, their feature sets, parameters, cross-validation metrics, and output file paths are documented in a model catalog (MODEL_CATALOG.csv). Model codes follow the naming convention:
-{TARGET}_{ALGORITHM}_{VERSION} (e.g., PROB_RF_001).
-
-#### Output encoding
-Statewide predictions were written as Cloud-Optimized GeoTIFFs (COGs) at 10m resolution in EPSG:5070. Probability is stored as `uint8` (pixel value × 0.005 = probability, nodata = 255), depth as `uint16` (1cm per unit, nodata = 65535), and composition as `uint8` (pixel value × 0.5 = percent, nodata = 255). 
+4) Output encoding - Raster map inferences were written as Cloud-Optimized GeoTIFFs (COGs) at a 10m resolution. Percentage outputs rasters are stored as `uint8` (value × 0.5 = percent) and the depth raster as `uint16` (1cm per unit)
 
 ## Peat Probability
 
-Peat probability modeling was done in two versions. The first version (V1), used in the initial model runs, was a random forest. The second (V2) used a gradient boosting algorithm (LightGBM) and produced the final model used to create the map displayed in the MNLCC viewer. The random forest work is kept in the documentation because it informed the training data decisions and covariate exclusions, and because the comparison algorithms were first tested alongside it. 
+The peat probability modeling workflow has two distinct versions. The first version (V1) was a random forest. The second (V2) used a gradient boosting algorithm (LightGBM) and produced the final model used to create the map displayed in the MNLCC viewer. The random forest work is kept within this documentation because it informs training data decisions and because the comparison algorithms were tested alongside it. 
 
 ### Training Data
 
-The peat probability models were trained on the peat binary presence/absence dataset compiled from the MN DNR Peat Inventory, NASIS, and the MBS. The initial compiled dataset contained ~102,000 points. After shallow, non-histosol points with organic material depths of 1-20cm were excluded, the final training dataset contained 57,134 points with 18.2% coded as peat and 81.8% as non peat.
+The peat probability models were trained on the peat binary presence/absence dataset compiled from the MN DNR Peat Inventory, NASIS, and the MBS. The initial compiled dataset contained ~102,000 points. After shallow, non-histosol points with organic material depths of 1-20 cm were excluded, the final training dataset contained 57,134 points with 18.2% coded as peat and 81.8% as non peat.
 
 ### Covariate Development and Categorical Features
 
-The initial covariate stack of the V1 random forest contained 172 candidate features such as terrain derivatives and satellite imagery. A correlation filter (Pearson |r| ≥ 0.90, dropping the lower variance feature of each pair) reduced this to 143 features.
+The initial V1 covariate stack was made up of 172 candidate features. To limit the redundancy of predictors in the random forest model, a Pearson correlation filter was applied using a threshold of |r| ≥ 0.90. Each pair of correlated features meeting that threshold had the lower variance feature dropped from the stack. This filtering reduced the set to 143 covariates.
 
 #### Exclusion of Peat Reference Layers
 
-Early model runs (exp201, exp301-303) included peat reference layers as predictive features  such as histosol rasters, gNATSGO organic component classifications, and NWI wetland layers. These experiments resulted in inflated AUC values (exp201 AUC=0.994) because the model was learning to reproduce the reference maps instead of independently predicting
-peat from the landscape covariates. To prevent the model from using circular logic the peat reference maps were ultimately excluded from the feature set.
+Early model runs (exp201, exp301-303) included peat reference layers as predictive features  such as the Potentially Wet Histosol layer and gNATSGO organic components. These experiments resulted in inflated AUC values (exp201 AUC=0.994) because the model was learning to reproduce the reference maps instead of independently predicting
+peat presence from the covariates. To prevent the model from using circular logic the peat reference maps were ultimately excluded from the feature set.
 
-#### Categorical one-hot covariates and polygon artifacts
+#### Categorical covariates and polygon artifacts
 
-Early experiments (exp401-408) included categorical raster layers encoded as one-hot features: quaternary geology classification, Pennock landform class, and geomorphons. These covariates produced visible polygon shaped artifacts in the output inferences such as hard geometric edges corresponding to vector boundaries. Because these boundaries reflected mapped units rather than a continuous peat forming process, the model learned to abruptly change predictions at polygon edges.
+Other early experiments (exp401-408) included categorical raster layers encoded as one-hot features: quaternary geology classification, Pennock landform class, and geomorphons. The inclusion of these covariates in the model resulted in visible polygon shaped artifacts in the output inferences such as hard geometric edges that corresponded to vector boundaries. Because the boundaries were showing mapped units rather than a continuous peat forming process, the model learned to abruptly change predictions at polygon edges.
 
-In exp409 and exp410 all categorical one-hot features were removed. This cost minimal AUC (exp407 with categoricals: 0.9740, exp410 without: 0.9722) and the visual quality of the inference map improved substantially. Exp410 was selected as the best RF peat probability model because of its overall visual coherence.
+In exp409 and exp410, all categorical one-hot features were removed. This cost minimal AUC (0.974 with categoricals, 0.9722 without) and substantially improved the visual quality of the inference map. Exp410 was selected as the production RF peat probability model because of its metric scores as well as visual coherence.
 
-
-Experiments exp409 and exp410 removed all categorical one-hot features. The visual quality of the inference was improved substantially by removing them. Exp410 was selected as the best RF peat probability model on due to its visual consistency and the marginal performance difference.
 #### National Wetlands Inventory Encoding
 
-The NWI vector data was converted and classified to a raster by Cowardin code and separated into 3 groupings: 
-0 = Non-wetland
-1 = Wetland
-2 = Lowland conifer (PFO4, PSS4, PFO2, PSS2, mixed codes containing "/4")
+Three NWI encoding strategies were evaluated across RF model experiments 
+- 3-class encoding (0=non-wetland, 1=wetland, 2=lowland conifer) 403, 406
+- Binary encoding (0=non-wetland, 1=any wetland class) 404, 407
+- NWI excluded entirely 405, 408
 
-Three NWI strategies were evaluated across experiments exp404-408:
-- 3-class encoding (0=non-wetland, 1=wetland, 2=lowland conifer): exp403, 406
-- Binary encoding (0=non-wetland, 1=any wetland class): exp404, 407
-- NWI excluded entirely: exp405, 408
+NWI contributed minimally to the overall model AUC on experiments using the original full point dataset. On the revised 1-20 cm dropped point dataset the AUC differences were negligible between NWI encoding strategies (AUC 0.973 versus 0.974). NWI Binary encoding was selected to be kept in the final RF model because it preserved visually meaningful wetland versus non-wetland discrimination without creating artifacts.
 
-NWI contributed minimally when tested on the full dataset (exp403-405). On the 0-20cm dropped dataset (exp406-408) the differences between strategies were negligible. Binary encoding was kept in the final random forest model because it preserved meaningful wetland/non-wetland discrimination without creating polygon artifacts. 
+### Random Forest (V1)
 
 #### Recursive Feature elimination
 
-After non-NWI categorical features were dropped, recursive feature elimination was applied to the remaining covariates.
+After the Pearson coefficient was applied and categorical features were dropped (excluding NWI binary) recursive feature elimination (RFE) was applied to reduce the remaining covariates used in the model. A random forest classifier with 200 trees was trained using 5-fold cross validation. Iterations of the model were run and the feature with the lowest mean impurity-based importance across folds was dropped each time. This process was continued until AUC was reduced by more than 0.5 points from the maximum, resulting in a final stack of 41 features to be used in the RF model.
 
-A random forest classifier with 200 trees was trained using 5-fold cross validation. First, the model ran using all covariates as inputs. The feature with the lowest mean importance across folds was dropped. Then, another iteration of the model was run without the dropped covariate. The process continued until AUC was reduced by more then 0.5 points from the maximum. This process reduced the final covariate stack from a total of 77 features to 41.
+The set of the 41 final features includes:
 
-**THIS LIST HAS CHANGED WITH ADDITION OF NEW COVARITES AND BETTER MODELS**
--All 12 sentinel-2 spring bands
--Selected summer and fall bands
--Tasseled Cap components across all seasons
--Terrain derivatives (DEM, slope, wetness index, flow accumulation, curvature, deviation from mean elevation) 
--PRISM climate normals
-NWI binary wetland indicator
--Distance features (to water, streams, roads, waterbody edge)
+- All 12 sentinel-2 spring bands
+- Selected summer and fall bands
+- Tasseled Cap components for all seasons
+- Terrain derivatives (DEM, slope, wetness index, flow accumulation, curvature, deviation from mean elevation)
+- PRISM climate normals
+- NWI binary wetland indicator
+- Distance features (to water, streams, roads, waterbody edge)
 
-Exp410 was chosen as the final random forest production model. It used 41 features with 500 trees, square root of features considered at each split, and a minimum of 1 sample per leaf. 
+Exp410 was chosen as the final random forest production model. It used the 41 features with 500 trees and a minimum of 1 sample per leaf.
 
-#### Probability Threshold Optimization
+| Metric | Random CV | Spatial CV |
+|--------|-----------|------------|
+| AUC | 0.9722 | 0.9567 |
+| Average Precision | 0.9193 | 0.8861 |
+| F1 (threshold = 0.327) | 0.8445 | 0.8061 |
+| n | 57,134 | 57,134 |
 
-When creating a spatial output from the peat probability models, the output must be thresholded to determine what probability range is considered peat and what range is considered non-peat.
-Three threshold metrics were evaluated by sweeping 200 equally-spaced values from 0 to 1 across spatial CV out-of-fold predictions:
+The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where nearby observations are more similar and random folds are overestimating performance.
 
-- F1-optimal: the harmonic mean of precision and recall
-- Youden's J: sensitivity + specificity − 1
-- G-mean: geometric mean of sensitivity and specificity
 
-The first threshold used after initial random forest inferences were made was 0.50 and did a poor job by underpredicting peat. Areas with identifiable peat from imagery were excluded at this threshold.
+### Gradient Boosting (V2)
 
-The F1-optimal threshold of 0.327 was the final selection. (for random forest model) At this threshold the RF model correctly identifies 85% of true peat observations (sensitivity = 0.85) with a precision of 0.84. The Youden's J threshold (0.186) was tested but not used as it predicted peat too often and had a false positive rate of around 25%.
+Version 2 of the peat probability modeling process used gradient boosting algorithms. Gradient boosting builds a model as a sequence of decision trees where each new tree is trained to correct the errors by the trees before it. Gradient boosting can fit complicated patterns between covariates more closely than a random forest, but is prone to overfitting if settings and tuning are not controlled.
 
-The F1-optimal threshold of 0.327 was also used as the peat probability mask for the various peat property models that were run exclusively on areas were peat is likely to exist
-(depth, organic decomposition)
+Two boosting implementations were tested in this project, XGBoost and LightGBM. Both were trained on the covariates that remained after the Pearson correlation filter (|r| ≥ 0.90) was applied. Recursive feature elimination was not used for the boosting models. It is only needed for the random forest because the boosted models select correlated covariates as trees are built.
 
-**add threshold section below other models or keep it here under random forest??** 
+The peat present points are the minority class in the training data (18.2% of the 57,134 points). Because of this, weighted and unweighted versions of both boosting algorithms were compared. In the weighted version of the model runs, the peat class has more influence in the training. The ‘scale_pos_weight’ setting was set at 4.495 which is the ratio of non-peat to peat points so that they have an equal total weight. This helps the model identify the less common class, in this case peat presence, but can overestimate the likelihood of that class. In the unweighted versions each point counts equally and the model learns the natural frequency. The imbalance is then handled afterward when a probability threshold is selected.
+Weighting had little effect on the overall model performance. Spatial AUC scores were almost the same between weighted and unweighted models for both XGBoost (0.9730 vs. 0.9738) and LightGBM (0.9744 vs. 0.9739). However, the unweighted models had better Brier scores and higher F1 scores for both algorithms. Because the final maps show predicted probabilities and the classification threshold is applied afterward, unweighted models were used for all final probability maps. 
 
-### Gradient Boosting (XGBoost and LightGBM)
 
-XGBoost and LightGBM were trained using spatial block cv. Class imbalance was addressed with 'scale_pos_weight' set to the ratio of negative to positive training examples.
 
-#### Point_ID Correction
-The first runs of the gradient boosting models (PROB_XGB_001, PROB_LGBM_001) included the point_id column in the feature set. During training, the model assigned high importance to this feature because it correlated with spatial patterns in the training data. When spatial inferences were made, point_id was assigned a constant fill value across all pixels which placed every inference pixel outside the training distribution for one of the model's most important features. This resulted in inflated predictions of 0.98–1.00 in tiles where the RF model had predicted values in the 0.02–0.20 range. 
 
-Corrected models (PROB_XGB_002, PROB_LGBM_002) were retrained using 76 features with point_id dropped. The AUC was essentially the same which confirmed that point_id had no predictive signal and was an error in the inferences. 
+
+# Everything below is still being edited
+
 
 ### Generalized Additive Model (GAM)
 
