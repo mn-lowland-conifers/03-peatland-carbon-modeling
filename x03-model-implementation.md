@@ -87,7 +87,6 @@ Exp410 was chosen as the final random forest production model. It used the 41 fe
 
 The decrease from random cv (AUC=0.972) to spatial cv (AUC=0.957) shows spatial autocorrelation in the training data where nearby observations are more similar and random folds are overestimating performance.
 
-
 ### Gradient Boosting (V2)
 
 Version 2 of the peat probability modeling process used gradient boosting algorithms. Gradient boosting builds a model as a sequence of decision trees where each new tree is trained to correct the errors by the trees before it. Gradient boosting can fit complicated patterns between covariates more closely than a random forest, but is prone to overfitting if settings and tuning are not controlled.
@@ -97,8 +96,44 @@ Two boosting implementations were tested in this project, XGBoost and LightGBM. 
 The peat present points are the minority class in the training data (18.2% of the 57,134 points). Because of this, weighted and unweighted versions of both boosting algorithms were compared. In the weighted version of the model runs, the peat class has more influence in the training. The ‘scale_pos_weight’ setting was set at 4.495 which is the ratio of non-peat to peat points so that they have an equal total weight. This helps the model identify the less common class, in this case peat presence, but can overestimate the likelihood of that class. In the unweighted versions each point counts equally and the model learns the natural frequency. The imbalance is then handled afterward when a probability threshold is selected.
 Weighting had little effect on the overall model performance. Spatial AUC scores were almost the same between weighted and unweighted models for both XGBoost (0.9730 vs. 0.9738) and LightGBM (0.9744 vs. 0.9739). However, the unweighted models had better Brier scores and higher F1 scores for both algorithms. Because the final maps show predicted probabilities and the classification threshold is applied afterward, unweighted models were used for all final probability maps. 
 
+### Generalized Additive Model (GAM)
+
+A generalized additive model (GAM) fits a curve for each covariate and then adds those curves together. For the target of peat presence, a logistic GAM was used. A GAM can identify patterns occurring in a single covariate such as peat presence becoming more likely below a certain slope. However, unlike a random forest or boosted models, a standard GAM does not identify interactions between covariates.
 
 
+A logistic GAM was built using the pygam library with thin-plate spline terms, which allow the model to fit smooth curves to individual covariates. A GAM with this many smooth terms requires a lot of memory, so each cross-validation fold was trained on a balanced subsample of 30,000 observations (15,000 peat, 15,000 non-peat).
+
+| Metric | Spatial CV |
+|--------|------------|
+| AUC | 0.9544 |
+| Average Precision | 0.8567 |
+| F1 (threshold = 0.754) | 0.7957 |
+
+### Support Vector Machine
+
+A support vector machine (SVM) identifies the boundary that separates peat and non-peat observations that have the widest margin. A radial basis function (RBF) kernel was used which allows the boundary to be a curve rather than a straight line. Because SVM uses distances between observations, StandardScaler was used to standardize covariates so that no variable would have an advantage on the model. A large amount of memory is required to run these models which increases with the number of training points, so each fold used a subsample that included 15,000 observations (7,500 peat, 7,500 non-peat). Predictions were then generated on the full held-out fold. Hyperparameters were C = 1.0, gamma = 'scale' and class_weight = 'balanced'.
+
+| Metric | Spatial CV |
+|--------|------------|
+| AUC | 0.9525 |
+| Average Precision | 0.8528 |
+| F1 (threshold = 0.764) | 0.8010 |
+
+### Logistic Regression
+
+Logistic regression predicts the likelihood of peat presence based on a weighted combination of the covariates. It assumes each covariate has a straight-line relationship with peat presence and does not account for thresholds. In this case, logistic regression was used primarily as a baseline to compare to the more complex models. The model is standardized with StandardScaler, uses the lbfgs solver, C = 1.0 and class_weight = 'balanced'.
+
+| Metric | Spatial CV |
+|--------|------------|
+| AUC | 0.9454 |
+| Average Precision | 0.8139 |
+| F1 (threshold = 0.754) | 0.7756 |
+
+### Convolutional Neural Network (CNN)
+
+A convolutional neural network (CNN) is a type of neural network commonly used with images and other spatial data. It learns patterns such as edges and textures and then combines those patterns to make a prediction. In this project the raster covariates acted as a “landscape” surrounding the points to then be used to predict from rather than using individual pixel values.
+The model used two inputs; 1) a raster patch on each training point and 2) the covariate values inside of the patch. These inputs were processed separately and then combined to make a prediction. Two patch sizes were tested (15 × 15 and 31 × 31) which changed the amount of pixels the model saw surrounding the points. The best CNN model had a spatial CV AUC of 0.962 which was similar to the boosted models.
+The CNN was not chosen as the production model because it required large compute and compute time. Mapping was also more complex because the spatial inference requires a full raster patch around every pixel. 
 
 
 # Everything below is still being edited
