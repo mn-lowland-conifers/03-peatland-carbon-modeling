@@ -139,30 +139,6 @@ The CNN was not chosen as the production model because it required large compute
 # Everything below is still being edited
 
 
-### Generalized Additive Model (GAM)
-
-A Logistic GAM was fit using the pygam library with thin-plate spline terms for each of the covariates. Due to high memory needed and issues with the jobs completing on MSI, each cross-validation fold was trained on a subsample of 30,000 observations (15,000 peat, 15,000 non-peat).
-
-### Support Vector Machine
-
-A Support Vector Classifier with RBF kernel standardized with StandardScaler was also run. Because of memory complexity of kernel SVM, each fold used a subsample of the training points 
-that included 15,000 training observations (7,500 peat, 7,500 non-peat). Predictions were generated on the full held-out fold.
-
-Hyperparameters: C = 1.0, gamma = 'scale', class_weight = 'balanced'.
-
-### Logistic Regression
-
-The logistic regression model used  L2 regularization as a linear baseline. Fit on all features and standardized with StandardScaler.
-
-Solver: lbfgs, C = 1.0, class_weight = 'balanced'.
-
-### Convolutional Neural Network (CNN))
-
-For the CNN models a dual branch architecture was used. One branch takes a spatial raster patch centered on the training point and a second branch takes the standard tabular covariate stack. Each branch is processed separately and then concatenated before the final prediction layer. Training used spatial block CV and ran on GPU (A100) nodes.
-
-Two patch sizes (15x15 and 31x31) were both tried with additional 31x31 iterations to attempt to improve performance. 
-
-Although the models ran successfully and had comparable metrics to other algorithms, the time and computing issues related to creating spatial inferences stopped further experimentation. 
 
 ### Model Selection
 
