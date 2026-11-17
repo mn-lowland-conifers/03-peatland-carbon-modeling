@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4&nbsp; 4. Model Implementation – MN Peatland Carbon Modeling</title>
+<title>4&nbsp; Model Implementation – MN Peatland Carbon Modeling</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -88,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x03-model-implementation.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">4. Model Implementation</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./x03-model-implementation.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -134,7 +134,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./x03-model-implementation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">4. Model Implementation</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -176,12 +176,12 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">4.1</span> 4.1 Overview</a>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">4.1</span> Overview</a>
   <ul class="collapse">
   <li><a href="#cross-validation" id="toc-cross-validation" class="nav-link" data-scroll-target="#cross-validation">Cross-Validation</a></li>
   <li><a href="#shared-modeling-decisions" id="toc-shared-modeling-decisions" class="nav-link" data-scroll-target="#shared-modeling-decisions">Shared Modeling Decisions</a></li>
   </ul></li>
-  <li><a href="#peat-probability" id="toc-peat-probability" class="nav-link" data-scroll-target="#peat-probability"><span class="header-section-number">4.2</span> 4.2 Peat Probability</a>
+  <li><a href="#peat-probability" id="toc-peat-probability" class="nav-link" data-scroll-target="#peat-probability"><span class="header-section-number">4.2</span> Peat Probability</a>
   <ul class="collapse">
   <li><a href="#training-data" id="toc-training-data" class="nav-link" data-scroll-target="#training-data">Training Data</a></li>
   <li><a href="#covariate-development-and-categorical-features" id="toc-covariate-development-and-categorical-features" class="nav-link" data-scroll-target="#covariate-development-and-categorical-features">Covariate Development and Categorical Features</a></li>
@@ -194,7 +194,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#final-model-lightgbm" id="toc-final-model-lightgbm" class="nav-link" data-scroll-target="#final-model-lightgbm">Final Model: LightGBM</a></li>
   <li><a href="#threshold-selection" id="toc-threshold-selection" class="nav-link" data-scroll-target="#threshold-selection">Threshold Selection</a></li>
   </ul></li>
-  <li><a href="#peat-depth" id="toc-peat-depth" class="nav-link" data-scroll-target="#peat-depth"><span class="header-section-number">4.3</span> 4.3 Peat Depth</a>
+  <li><a href="#peat-depth" id="toc-peat-depth" class="nav-link" data-scroll-target="#peat-depth"><span class="header-section-number">4.3</span> Peat Depth</a>
   <ul class="collapse">
   <li><a href="#training-data-and-masking" id="toc-training-data-and-masking" class="nav-link" data-scroll-target="#training-data-and-masking">Training Data and Masking</a></li>
   <li><a href="#early-random-forest-experiments" id="toc-early-random-forest-experiments" class="nav-link" data-scroll-target="#early-random-forest-experiments">Early Random Forest Experiments</a></li>
@@ -210,7 +210,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">4. Model Implementation</span></h1>
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Implementation</span></h1>
 </div>
 
 
@@ -230,7 +230,7 @@ ul.task-list li input[type="checkbox"] {
 <p>This section covers the development and evaluation of models created to predict peat presence and other characteristics. The modeling workflow has four steps: (1) curation of the training data for each property that is being modeled. (2) covariate feature selection. (3) model training and hyperparameter tuning. (4) model evaluation.</p>
 <p>In total, four statewide raster maps were produced including the probability of peat presence, peat depth, the composition of the upper meter of peat as fibric, hemic, and sapric percent, and carbon stock. The final probability, depth, and composition models use a LightGBM algorithm. The carbon stock map was then calculated from the depth map using a linear depth–carbon stock curve. Earlier model versions and other algorithms that were tested are documented alongside the selected production models.</p>
 <section id="overview" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="overview"><span class="header-section-number">4.1</span> 4.1 Overview</h2>
+<h2 data-number="4.1" class="anchored" data-anchor-id="overview"><span class="header-section-number">4.1</span> Overview</h2>
 <section id="cross-validation" class="level3">
 <h3 class="anchored" data-anchor-id="cross-validation">Cross-Validation</h3>
 <p>Cross-validation is a method used in machine learning to evaluate the performance of a model. Two cross-validation strategies were used in development and are reported with each model’s results.</p>
@@ -255,7 +255,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 </section>
 <section id="peat-probability" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="peat-probability"><span class="header-section-number">4.2</span> 4.2 Peat Probability</h2>
+<h2 data-number="4.2" class="anchored" data-anchor-id="peat-probability"><span class="header-section-number">4.2</span> Peat Probability</h2>
 <p>The peat probability modeling workflow has two distinct versions. The first version (V1) was a random forest. The second (V2) used a gradient boosting algorithm (LightGBM) and produced the final model used to create the map displayed in the MNLCC viewer. The random forest work is kept within this documentation because it informs training data decisions and because the comparison algorithms were tested alongside it.</p>
 <section id="training-data" class="level3">
 <h3 class="anchored" data-anchor-id="training-data">Training Data</h3>
@@ -553,7 +553,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 </section>
 <section id="peat-depth" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="peat-depth"><span class="header-section-number">4.3</span> 4.3 Peat Depth</h2>
+<h2 data-number="4.3" class="anchored" data-anchor-id="peat-depth"><span class="header-section-number">4.3</span> Peat Depth</h2>
 <p>The peat depth model predicts the thickness of peat in centimeters at every pixel inside the peat mask from the probability model. The target (<code>depb</code>), is the maximum peat depth measured at a point. Because depth is a regression problem the model predicts a continuous number and not a class. Depth is an important property in this project because below ground carbon depends on how much peat is present, and the final below ground carbon stock map is calculated directly from the depth map.</p>
 <p>Peat depth is a harder variable to predict than peat presence. The covariate stack used are surface properties that can describe peat presence well but the thickness of peat underground is only indirectly related to them. Depth is also strongly clustered in space which can be seen in the gap between random and spatial cross-validation. Two measures are reported for the depth models:</p>
 <p><em>R²</em> - the share of the variation in depth that the model explains <em>Mean Absolute Error (MAE)</em> - The average miss in centimeters.</p>
