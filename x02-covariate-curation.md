@@ -1,9 +1,9 @@
 # Covariate Curation
 
-### Computing Environment
+## Computing Environment
 Processing of covariates was done on the Minnesota Supercomputing Institute (MSI) Agate AMD EPYC Linux cluster. A majority of scripts were run using SLURM batch scheduling. A custom conda environment (gdalenvgeospat) was created on MSI to run packages including GDAL, rasterio, fiona, geopandas, and WhiteboxTools. Standard MSI environments were not used to process rasters because of conflicts between system GDAL and the conda installed GDAL.
 
-### Reference Grid
+## Reference Grid
 All rasters were aligned to the gNATSGO grid before modeling. This process was done using gdalwarp with -ts 66474 75185 (target size) and -te (target extent) flags. Bilinear resampling was used for continuous data and nearest neighbor was used for categorical data.
 
 Reference raster: gNATSGO 10m MUKEY raster
@@ -12,13 +12,13 @@ CRS: EPSG:5070 (NAD83 / Conus Albers Equal Area)
 Origin: −99,098, 3,021,389
 Resolution: 10m
 
-### Digital Elevation Model
+## Digital Elevation Model
 Source: USGS 3D Elevation Program (3DEP), 10m resolution
 Download: National Map Downloader, https://apps.nationalmap.gov/downloader/
 Tiles mosaicked into a single statewide raster and clipped to the Minnesota state boundary using GDAL warp with output CRS forced to EPSG:5070
 minnesota_dem_10m.tif
 
-### Terrain Derivatives (WhiteboxTools)
+## Terrain Derivatives (WhiteboxTools)
 WhiteboxTools v2.4.0 was accessed through Python API with a conda kernel configured on MSI. Standard Python/GDAL environments on MSI did not include WhiteboxTools so the gdalenvgeospat environment was used. Multiprocessing parallelization (multiprocessing.Pool) was used to run terrain derivatives at the same time to speed up the process.
 
 ### Processing Strategy
@@ -71,7 +71,7 @@ Streams: DNR RiversStreams (lines)
 Roads: MnDOT Roadway Routes (lines)
 Final terrain derivatives: slope.tif, aspect.tif, hillshade.tif, planCurvature.tif, profileCurvature.tif, maximalCurvature.tif, breached_dem.tif, d8FlowAccumulation.tif, dInfFlowAccumulation.tif, wetnessIndex.tif, devfrommeanelev_4m.tif, devfrommeanelev_8m.tif, devfrommeanelev_16m.tif, diffFromMeanElev.tif, relativeTopographicPosition_4m.tif, relativeTopographicPosition_8m.tif, relativeTopographicPosition_16m.tif, geomorphons.tif, pennockLandformClass.tif
 
-### Sentinel-2 Imagery
+## Sentinel-2 Imagery
 Source: COPERNICUS/S2_SR_HARMONIZED from Google Earth Engine
 Dates: 2019–2024
 Extent: Minnesota state boundary (TIGER/2018/States)
@@ -95,7 +95,7 @@ GEE automatically tiled the whole state exports. Tiles were downloaded from goog
 
 Tasseled Cap Transformation compresses multiband data into single bands that can better track soils, urban areas, and vegetation (source). The three components used in this project were the Brightness (TCB), Greenness (TCG), and wetness (TCW). These bands are computed by applying a coefficient to existing S2 bands (Nedkov, 2017). Tasseled cap bands were computed on MSI and validated on expected correlation patterns (positive Brightness–Greenness, negative Brightness–Wetness, stronger Greenness–Wetness correlation in summer vs. spring/fall)
 
-### Sentinel-1 
+## Sentinel-1 
 
 The final probability and depth models use the combined (ascending and descending) Sentinel-1 composites (`s1_spring_combined`, `s1_summer_combined` and `s1_fall_combined`).
 The original export from GEE separated ascending and descending passes and had incomplete coverage in ascending data. Only 43% of points in the model had S1 coverage. However, the S1 covariate survived recursive feature elimination (RFE) in initial Random Forest model runs and increased R2 values. The export was changed to combine ascending and descending runs and to extend the date range, which gave the combined covariates used in the final models. 
@@ -103,13 +103,13 @@ The original export from GEE separated ascending and descending passes and had i
 Three bands per composite: VV (dB), VH (dB), VV/VH ratio.
 Exported as INT16 scaled ×100, converted to float32 /100 during mosaicking.
 
-### PRISM Climate Data
+## PRISM Climate Data
 Source: PRISM Climate Group, 30-year normals at 800m
 Layers: Annual precipitation, mean July max temp, mean annual temp, mean January min temp
 
 PRISM data was reprojected to EPSG:5070, clipped to the DEM extent, and resampled to 10m (bilinear) during alignment to the reference grid.
 
-### National Wetlands Inventory (NWI) 
+## National Wetlands Inventory (NWI) 
 Source: NWI geodatabase (https://www.mngeo.state.mn.us/chouse/water_wetlands.html)
 
 The NWI vector data was converted and classified to a raster on MSI using fiona and rasterio. Polygons were classified by their Cowardin code and separated into 3 distinct groupings: 
@@ -119,7 +119,7 @@ The NWI vector data was converted and classified to a raster on MSI using fiona 
 
 The encoding classes were evaluated during initial random forest model runs and the 3-class classification gave no improvement. The final raster used was split into a binary encoding where 0 = non-wetland, 1 = any wetland
 
-### Distance Features
+## Distance Features
 Source: Minnesota statewide vector datasets
 Roads: MnDOT Roadway Routes
 Streams/rivers: DNR RiversStreams
@@ -127,7 +127,7 @@ Water bodies: DNR HydroFeatures
 
 Euclidean distance rasters were computed from vector layers using GDAL proximity.
 
-### gNATSGO Organic Soils
+## gNATSGO Organic Soils
 Source: gNATSGO for Minnesota 
 
 gNATSGO (gridded National Soil Survey Geographic Database) is the USDAs Natural Resource Conservation Service's soils product. It merges SSURGO with STATSGO into one database per state. The 10m MUKEY raster was used to pull organic soils classified in Minnesota and then split into 8 separate classes based on soil taxonomy:
@@ -145,7 +145,7 @@ A binary version of this raster was also created using any MUKEY containing an o
 
 Both gNATSGO derived layers ended up being excluded from probability model training as predictors because they are peat classification products and including them caused circular logic. They were retained as reference/validation layers and used in peat property models. 
 
-### Categorical Layers
+## Categorical Layers
 
 These layers produced visible polygon shaped artifacts such as geometric edges in the spatial inferences. Because the models learned to change predictions on polygon edges they were excluded from training. 
 
@@ -154,6 +154,3 @@ pennockLandformClass.tif — Pennock Landform Class
 geomorphons.tif — geomorphon landform classification
 
 The AUC cost from removal of these covariates was found to be minimal in experimentation (~0.002) and the visual output quality improved.
- 
-
-
