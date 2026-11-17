@@ -1,10 +1,10 @@
-# 4. Model Implementation
+# Model Implementation
 
 This section covers the development and evaluation of models created to predict peat presence and other characteristics. The modeling workflow has four steps: (1) curation of the training data for each property that is being modeled. (2) covariate feature selection. (3) model training and hyperparameter tuning. (4) model evaluation. 
 
 In total, four statewide raster maps were produced including the probability of peat presence, peat depth, the composition of the upper meter of peat as fibric, hemic, and sapric percent, and carbon stock. The final probability, depth, and composition models use a LightGBM algorithm. The carbon stock map was then calculated from the depth map using a linear depth–carbon stock curve. Earlier model versions and other algorithms that were tested are documented alongside the selected production models.
 
-## 4.1 Overview
+## Overview
 
 ### Cross-Validation
 
@@ -28,7 +28,7 @@ Some decisions made in the modeling workflow were consistent across all target p
 
 4) Output encoding - Raster map inferences were written as Cloud-Optimized GeoTIFFs (COGs) at a 10m resolution. Percentage outputs rasters are stored as `uint8` (value × 0.5 = percent) and the depth raster as `uint16` (1cm per unit)
 
-## 4.2 Peat Probability
+## Peat Probability
 
 The peat probability modeling workflow has two distinct versions. The first version (V1) was a random forest. The second (V2) used a gradient boosting algorithm (LightGBM) and produced the final model used to create the map displayed in the MNLCC viewer. The random forest work is kept within this documentation because it informs training data decisions and because the comparison algorithms were tested alongside it. 
 
@@ -206,7 +206,7 @@ The 0.362 threshold is then used to produce the statewide peat mask. The mapped 
 | ≥ 0.45 | 6,726,459 |
 | ≥ 0.50 | 6,302,600 |
 
-## 4.3 Peat Depth
+## Peat Depth
 
 The peat depth model predicts the thickness of peat in centimeters at every pixel inside the peat mask from the probability model. The target (`depb`), is the maximum peat depth measured at a point. Because depth is a regression problem the model predicts a continuous number and not a class. Depth is an important property in this project because below ground carbon depends on how much peat is present, and the final below ground carbon stock map is calculated directly from the depth map.
 
