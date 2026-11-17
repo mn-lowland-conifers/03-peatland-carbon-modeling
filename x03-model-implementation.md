@@ -1,10 +1,10 @@
-# Model Implementation
+# 4. Model Implementation
 
 This section covers the development and evaluation of models created to predict peat presence and other characteristics. The modeling workflow has four steps: (1) curation of the training data for each property that is being modeled. (2) covariate feature selection. (3) model training and hyperparameter tuning. (4) model evaluation. 
 
 In total, four statewide raster maps were produced including the probability of peat presence, peat depth, the composition of the upper meter of peat as fibric, hemic, and sapric percent, and carbon stock. The final probability, depth, and composition models use a LightGBM algorithm. The carbon stock map was then calculated from the depth map using a linear depth–carbon stock curve. Earlier model versions and other algorithms that were tested are documented alongside the selected production models.
 
-## Overview
+## 4.1 Overview
 
 ### Cross-Validation
 
@@ -28,7 +28,7 @@ Some decisions made in the modeling workflow were consistent across all target p
 
 4) Output encoding - Raster map inferences were written as Cloud-Optimized GeoTIFFs (COGs) at a 10m resolution. Percentage outputs rasters are stored as `uint8` (value × 0.5 = percent) and the depth raster as `uint16` (1cm per unit)
 
-## Peat Probability
+## 4.2 Peat Probability
 
 The peat probability modeling workflow has two distinct versions. The first version (V1) was a random forest. The second (V2) used a gradient boosting algorithm (LightGBM) and produced the final model used to create the map displayed in the MNLCC viewer. The random forest work is kept within this documentation because it informs training data decisions and because the comparison algorithms were tested alongside it. 
 
@@ -165,7 +165,7 @@ The final model uses 57 covariates:
 Spatial cross-validation gives the performance that can be expected in areas without training points:
 
 | Metric | Spatial CV | Random CV |
-|--------|-----------|-----------|
+|--------|-----------|------------|
 | AUC | 0.9642 | 0.9766 |
 | Average precision | 0.9002 | 0.9325 |
 | Brier score | 0.0483 | 0.0383 |
@@ -206,6 +206,42 @@ The 0.362 threshold is then used to produce the statewide peat mask. The mapped 
 | ≥ 0.45 | 6,726,459 |
 | ≥ 0.50 | 6,302,600 |
 
+## 4.3 Peat Depth
+
+The peat depth model predicts the thickness of peat in centimeters at every pixel inside the peat mask from the probability model. The target (`depb`), is the maximum peat depth measured at a point. Because depth is a regression problem the model predicts a continuous number and not a class. Depth is an important property in this project because below ground carbon depends on how much peat is present, and the final below ground carbon stock map is calculated directly from the depth map.
+
+Peat depth is a harder variable to predict than peat presence. The covariate stack used are surface properties that can describe peat presence well but the thickness of peat underground is only indirectly related to them. Depth is also strongly clustered in space which can be seen in the gap between random and spatial cross-validation. Two measures are reported for the depth models:
+
+*R²* - the share of the variation in depth that the model explains
+*Mean Absolute Error (MAE)* - The average miss in centimeters.
+
+### Training Data and Masking
+
+Early depth models were trained on the full point set which included points that had a depth of zero. This produced deceptively high R² values (~0.70), a misleading result because the high R² mainly showed the model separating zero from non-zero depth, and the model had bad accuracy at locations that actually have peat.
+
+To correct this problem a two-stage approach was used. First, the peat probability model is used as a mask, and depth regression is trained and predicted only on locations the probability model classifies as peat. For a depth point to be included in the training data it must meet both of the criterion `depb > 0` AND `PROB_LGBM ≥ 0.362`. This filter resulted in 8,223 training points.
+
+### Early Random Forest Experiments
+
+The depth modeling originally used a random forest model. Experiments that were tested included adding SSURGO soil survey data as a covariate, dropping shallow peat (1-20 cm) points from the training data, and log-transforming the depth target. Recursive feature elimination reduced the feature set to 15 with performance improving as features were removed. The random CV R² started at 0.4233 with 125 features and increased to 0.484 with 15 features.
+
+### Other Algorithms
+
+XGBoost, LightGBM, GAM, a linear SVM and Ridge regression were also evaluated for depth in the same way as probability. On spatial CV the models performed similarly with an R² between 0.26 and 0.33. The random CV R² of the gradient boosting models was much higher than their spatial CV R² (0.62 versus 0.30) showing that peat depth is even more spatially correlated than peat probability. 
+
+### Final Base Model: LightGBM
+
+The depth pipeline followed the same steps as probability. First a correlation filter reduced 172 features down to 143.  RFE was run for the random forest only (143 reduced to 37). Baseline training of the models and then tuning with Optuna (TPE sampler, 50 trials per model, optimizing spatial CV R²). No class weighting was needed for a regression target.
+
+LightGBM was the best performing model before and after tuning. The untuned spatial R² values were 0.27 (random forest), 0.28 (XGBoost) and 0.29 (LightGBM), and after tuning they were 0.2731, 0.2885 and 0.2925. The final base model, `DEPTH_LGBM_TUNED`, has a spatial R² of 0.2925 and MAE of 74.6 cm, a random R² of 0.4273 and MAE of 66.1 cm, and was trained on 8,223 points. 
+
+The depth model uses the same covariate exclusion list as probability with one difference. The SSURGO organic soil classes are kept for depth. They are a peat classification product, so they would be circular for predicting whether peat exists, but because depth is only trained inside the peat present mask using this layer for peat depth it is not circular, and it improved the depth models. 
+
+### Deep-Tail Blend
+
+#### Predicting Deep Peat
+
+The base LGBM model underpredicted deep peat. Training point data has depths up to 900 cm with 677 points deeper than 366 cm and 179 points deeper than 490 cm, which made up about 10% of the training set. Because a LightGBM model predicts the mean of the training points in each leaf, the rare deep observations get averaged together with shallower neighbors, which causes the model to underestimate areas where deep peat exists.
 
 
 
