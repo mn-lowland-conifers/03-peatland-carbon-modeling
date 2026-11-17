@@ -20,6 +20,7 @@ book:
     - references.md
 
 bibliography: references.bib
+number-depth: 2
 
 format:
   html:
