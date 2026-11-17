@@ -135,60 +135,76 @@ A convolutional neural network (CNN) is a type of neural network commonly used w
 The model used two inputs; 1) a raster patch on each training point and 2) the covariate values inside of the patch. These inputs were processed separately and then combined to make a prediction. Two patch sizes were tested (15 × 15 and 31 × 31) which changed the amount of pixels the model saw surrounding the points. The best CNN model had a spatial CV AUC of 0.962 which was similar to the boosted models.
 The CNN was not chosen as the production model because it required large compute and compute time. Mapping was also more complex because the spatial inference requires a full raster patch around every pixel. 
 
+### Final Model: LightGBM 
 
-# Everything below is still being edited
+After all of the above models were tested, LightGBM was selected as the best performing based on its spatial AUC score and Brier score. 
 
+#### Model settings
 
+The final hyperparameters came from Optuna tuning of the LightGBM model. In the tuning process the largest gains in performance came from slower learning rates and stronger larger minimum leaf sizes. The final settings of the LightGBM peat probability model are:
 
-### Model Selection
+- 620 trees (`n_estimators`) with a learning rate of 0.0166 so each tree makes only a small correction
+- up to 282 leaves per tree with a maximum depth of 15, and at least 92 points in each leaf (`min_child_samples`)
+- each tree uses 56% of the rows (`subsample`) and 72% of the features (`colsample_bytree`)
+- L1 regularization (`reg_alpha`) of 3.38 and L2 regularization (`reg_lambda`) of 0.71, which penalizes large leaf values
+- trained unweighted, on all 57,134 points
 
-All probability models were evaluated on spatial block cross-validation AUC as the primary selection criterion, with F1 at optimal threshold and average precision as secondary metrics.
-The performance of each model is shown in the Results section.
+#### Covariates
 
+The final model uses 57 covariates:
 
-## Peat Depth
-### Random Forest
-#### Training Data and Masking
+- terrain: slope, aspect, hillshade, three curvatures, breached DEM, D-infinity flow accumulation, deviation from mean elevation and relative topographic position (at three scales each)
+- distance to water and streams (roads was removed due to artifacts)
+- PRISM climate normals 
+- Sentinel-2 bands and Tasseled Cap brightness, greenness and wetness
+- Sentinel-1 combined VV, VH and VV/VH ratio composites
+- the NWI wetland classes
 
-Early depth models were trained on the full point set including points with a depth of zero which produced deceptively high R^2 values (~0.70). This was misleading as the high R^2 mainly showed the model separating zero from non-zero depth, and had bad accuracy at locations that actually have peat.
+#### Performance
 
-To correct this, a two-stage approach was adopted. The peat probability model (exp410, using the F1-optimal 0.327 threshold) is used as a mask, and depth regression is trained and predicted only on pixels the probability model classifies as peat. 
+Spatial cross-validation gives the performance that can be expected in areas without training points:
 
-The first two-stage depth model (exp301) produced an R^2 = 0.41 (random CV)
-#### Depth Model Experiments
+| Metric | Spatial CV | Random CV |
+|--------|-----------|-----------|
+| AUC | 0.9642 | 0.9766 |
+| Average precision | 0.9002 | 0.9325 |
+| Brier score | 0.0483 | 0.0383 |
 
-- Adding SSURGO soil survey data as covariates (exp411, exp412)
-- Dropping shallow (0-20cm) points (exp415) 
-- Log-transforming the depth target (exp413) 
-#### Recursive Feature Elimination
-RFE was run on the feature set for depth and reduce the amount of features to 15. Performance improved as features were removed from R^2 = 0.4233 at 125 features to a best result of R^2 = 0.484 at 15 features.
+At the selected threshold (0.362), the spatial out-of-fold predictions found 8,551 of the 10,397 peat points (recall 0.822) and labeled 2,003 of the 46,737 non-peat points as peat (4.3%). Of all points that were predicted as peat, 81% were peat (precision 0.810), giving an F1 score of 0.816 and an overall accuracy of 93.3%. 
 
-### Other Algorithms
-#### Gradient Boosting, GAM, SVM, and Linear Baselines
-Following the same approach used for peat probability, XGBoost, LightGBM, GAM, a linear SVM, and Ridge regression were evaluated for peat depth. 
+#### Variable importance
 
-Random CV R^2 for the gradient boosting models was substantially higher than their spatial CV R^2 (0.62 vs 0.30), showing that peat depth is even more spatially correlated than peat probability.
-#### Convolutional Neural Network
-The same dual-branch CNN architecture for peat probability was also built for depth.
+Two measures of importance were calculated for the probability model, split counts and gain. The split counts show how often the model uses a covariate and gain shows how much the covariate improves the model's fit. By split count the most used covariates were two PRISM climate layers (precipitation and January minimum temperature) along with the breached DEM and the distances to water and streams. Using gain, slope is the most important covariate by a large margin (over four times the second) followed by NWI non-wetland class and PRISM January minimum temperature.
 
-## Organic decomposition
+**add in table of covariate importance**
 
-#### Target and Training Data
-Organic decomposition modeling had a three part approach: determining as a percent the amount of Fibric, Hemic, and Sapric material in the top meter of peat. Training data came from organic_composition_features_extracted.csv which had 10,679 points and was restricted to the same peat probability mask used for depth (exp410 probability with threshold of 0.327). Training used coverage weighting and no categorical layers or peat reference layers were included.
+### Threshold Selection
 
-#### Modeling Approaches
-Two strategies were used for handling the three part composition target:
+The final probability model produces a value between 0 and 1 for every pixel in the map raster. To convert this product into a binary peat or non-peat mask, a threshold needs to be selected. The threshold is the cutoff value of which pixel values that are higher are assigned a value of peat present and values below that threshold turn into peat absent. Moving the threshold changes the total area of peatlands mapped. For example, moving the threshold from 0.25 to 0.50 changes the mapped peatland area from around 9.2 million to 6.3 million acres.
 
-1. **Independent target** -- Fibric %, Hemic %, and Sapric % are each modeled as separate targets, with no constraint that they sum to 100%. This is the approach used in exp421 and exp422.
+#### Final threshold 
 
-2. **Iterative residual regression** -- Fibric % is predicted first, then Hemic % is predicted as a fraction of the remainder (100% - Fibric), and Sapric % is assigned whatever is left. This means that the total percent at each predicted pixel of Fibric + Hemic + Sapric will sum to 100%. 
+Using a single metric to derive a threshold can favor one kind of error so the final threshold uses five metrics. The out-of-fold predictions were swept across 500 cutoffs (0.01–0.99) and the optimal threshold of each metric was found:
 
-XGBoost and LightGBM models were also trained as three independent regressors (one per decomposition state). Both used the full feature set as an input with and 500 trees, versus the 15-feature RFE set used for the RF experiments above.
+| Metric | Optimal threshold |
+|---|---|
+| Youden's J | 0.161 |
+| Balanced accuracy | 0.161 |
+| F1 | 0.362 |
+| Accuracy | 0.466 |
+| Matthews correlation coefficient (MCC) | 0.466 |
 
-## Below ground Carbon
+The range in optimal threshold from the above metrics range because they weigh mistakes differently. Youden's J and balanced accuracy count the peat and non-peat classes equally so they favor a low threshold that catches a majority of peat but with a higher amount of false positives. Accuracy and MCC are more influenced by the more prevalent non-peat classes and favor a higher threshold. F1 is in the middle because it looks at how well the peat class itself is predicted. Taking the median of the five, **0.362**, avoids committing to either extreme. 
 
+The 0.362 threshold is then used to produce the statewide peat mask. The mapped peatland extent within Minnesota is 7,553,829 acres (3,056,926 ha; 30,569 km²). 
 
-## Above ground Carbon
+| Probability threshold | Mapped acres |
+|---|---|
+| ≥ 0.25 | 9,189,405 |
+| ≥ 0.33 | 7,910,744 |
+| **≥ 0.362 (final)** | **7,553,829** |
+| ≥ 0.45 | 6,726,459 |
+| ≥ 0.50 | 6,302,600 |
 
 
 
